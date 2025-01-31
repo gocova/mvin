@@ -1,44 +1,46 @@
 import logging
-
+import typing
 from collections import deque
 from types import MappingProxyType
-from typing import Any, Callable, Dict, Iterable, Mapping, Sequence, Set, Tuple, List
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple
 
-from mvin import Token
+from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes
 from mvin.functions.excel_lib import DEFAULT_FUNCTIONS
 
 # Operator precedence and associativity
-OPERATORS = {
-    "&": (0.5, "L"),  # String concatenation
-    "=": (0, "L"),
-    "==": (0, "L"),
-    "<>": (0, "L"),
-    "!=": (0, "L"),
-    "<": (0, "L"),
-    ">": (0, "L"),
-    "<=": (0, "L"),
-    ">=": (0, "L"),
-    "+": (1, "L"),
-    "-": (1, "L"),
-    "*": (2, "L"),
-    "/": (2, "L"),
-    "^": (3, "R"),  # Exponentiation is right-associative
-}
+OPERATORS: Mapping[str, Tuple[int | float, str]] = MappingProxyType(
+    {
+        "&": (0.5, "L"),  # String concatenation
+        "=": (0, "L"),
+        "==": (0, "L"),
+        "<>": (0, "L"),
+        "!=": (0, "L"),
+        "<": (0, "L"),
+        ">": (0, "L"),
+        "<=": (0, "L"),
+        ">=": (0, "L"),
+        "+": (1, "L"),
+        "-": (1, "L"),
+        "*": (2, "L"),
+        "/": (2, "L"),
+        "^": (3, "R"),  # Exponentiation is right-associative
+    }
+)
 
 
 def get_interpreter(
     tokens: Sequence[Token],  # enumerable
+    registered_ops: Dict[str, Callable[[Token, Token], Token]] = REGISTERED_OPS,
     proposed_functions: Dict[str, Tuple[List | None, Callable]] = DEFAULT_FUNCTIONS,
 ) -> Callable[[Dict[str, Any], Any]] | None:
-    if isinstance(tokens, Iterable):
-        # functions = {}
-        # functions.update(proposed_functions)
+    if isinstance(tokens, Sequence):
+        ops = MappingProxyType(registered_ops)
         functions = MappingProxyType(proposed_functions)
 
         def infix_to_rpn(
             tokens: Sequence[Token],  # tokens from the tokenizer
             functions: Mapping[str, Tuple[List | None, Callable]],
-        ):
+        ) -> Tuple[Tuple[Token], Set[str]]:
             """
             Convert an infix expression to Reverse Polish Notation (RPN).
 
@@ -197,8 +199,68 @@ def get_interpreter(
                     raise SyntaxError("Unmatched `(` in expression.")
                 output.append(op_stack.pop())
 
-            return output, inputs
+            return tuple(output), inputs
 
         rpn_tokens, inputs = infix_to_rpn(tokens, functions)
+
+        def execute_func(
+            rpn_tokens: Tuple[Token], inputs_set: Set[str]
+        ) -> Callable[[Dict[str, typing.Any]], Any]:
+            def evaluate_rpn(inputs: Dict[str, typing.Any] = {}) -> typing.Any:
+                immutable_inputs: Mapping[str, Any] = MappingProxyType(inputs)
+
+                stack = deque()
+
+                for token in rpn_tokens:
+                    if token.type == "OPERAND":
+                        if token.subtype != "RANGE":
+                            stack.append(token)
+                        else:
+                            range_value = immutable_inputs.get(token.value)
+                            if range_value:
+                                stack.append(range_value)
+                            else:
+                                raise KeyError(
+                                    f"The input '{token.value}' is required but was not found in the provided inputs."
+                                )
+                    elif token.type == "OPERATOR-INFIX":  # in OPERATORS:
+                        if len(stack) < 2:
+                            raise ValueError(
+                                f"Not enough values for operation '{token.value}'."
+                            )
+                        b = stack.pop()
+                        a = stack.pop()
+
+                        if (
+                            token.value == "/"
+                            and b.type == "OPERAND"
+                            and (b.value == 0 or b.value == 0.0)
+                        ):
+                            stack.append(
+                                TokenError(
+                                    TokenErrorTypes.ZERO_DIV, "Division by zero."
+                                )
+                            )
+                        else:
+                            op = ops.get(token.value)
+                            if op:
+                                stack.append(op(a, b))
+                            else:
+                                raise NotImplementedError(
+                                    f" Operator '{token.value}' is not implemented"
+                                )
+                    elif token.type == "FUNC" and token.subtype == "OPEN":
+                        raise NotImplementedError()
+
+                if len(stack) != 1:
+                    raise ValueError(
+                        "Formula evaluation error: too many values remaining."
+                    )
+
+                return stack.pop().value
+
+            # evaluate_rpn.inputs = inputs_set
+            evaluate_rpn.__setattr__("inputs", inputs_set)
+            return evaluate_rpn
 
     return None

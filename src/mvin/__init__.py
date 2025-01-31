@@ -1,19 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-import typing
-
-# Dictionary to store registered operations
-REGISTERED_OPS: typing.Dict[str, typing.Callable] = {}
-
-
-# Decorator to register operator functions with multiple names
-def register_op(*names):
-    def decorator(func: typing.Callable):
-        for key in names:
-            REGISTERED_OPS[key] = func
-        return func  # Ensure the function remains usable normally
-
-    return decorator
+from typing import Dict, Callable, Any
 
 
 class Token(metaclass=ABCMeta):
@@ -29,7 +16,7 @@ class Token(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def value(self) -> typing.Any:
+    def value(self) -> Any:
         pass
 
 
@@ -49,7 +36,7 @@ class BaseToken(Token):
         return self._subtype
 
     @property
-    def value(self) -> typing.Any:
+    def value(self) -> Any:
         return self._value
 
 
@@ -87,3 +74,17 @@ class TokenError(BaseToken):
     @property
     def message(self) -> str:
         return self._message
+
+
+# Dictionary to store registered operations
+REGISTERED_OPS: Dict[str, Callable[[Token, Token], Token]] = {}
+
+
+# Decorator to register operator functions with multiple names
+def register_op(*names):
+    def decorator(func: Callable):
+        for key in names:
+            REGISTERED_OPS[key] = func
+        return func  # Ensure the function remains usable normally
+
+    return decorator
