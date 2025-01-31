@@ -30,8 +30,8 @@ OPERATORS: Mapping[str, Tuple[int | float, str]] = MappingProxyType(
 
 def get_interpreter(
     tokens: Sequence[Token],  # enumerable
-    registered_ops: Dict[str, Callable[[Token, Token], Token]] = REGISTERED_OPS,
     proposed_functions: Dict[str, Tuple[List | None, Callable]] = DEFAULT_FUNCTIONS,
+    registered_ops: Dict[str, Callable[[Token, Token], Token]] = REGISTERED_OPS,
 ) -> Callable[[Dict[str, Any], Any]] | None:
     if isinstance(tokens, Sequence):
         ops = MappingProxyType(registered_ops)
