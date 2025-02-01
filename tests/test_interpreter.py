@@ -64,3 +64,8 @@ def test_range_proper_value_transfer():
     assert run is not None
     result = run({"F7": TokenString("done")})
     assert result == "done"
+
+def test_none_as_token():
+    tokens = [None]
+    with pytest.raises(SyntaxError):
+        get_interpreter(tokens)

@@ -1,9 +1,9 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, ABC
 from enum import Enum
 from typing import Dict, Callable, Any, Tuple
 
 
-class Token(metaclass=ABCMeta):
+class Token(ABC, metaclass=ABCMeta):
     @property
     @abstractmethod
     def type(self) -> str:

@@ -4,6 +4,9 @@ sys.path.append('src')
 from mvin import BaseToken, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenString
 from mvin.interpreter import get_interpreter
 
+def test_basetoken():
+    base = BaseToken()
+
 class ManualToken(BaseToken):
     def __init__(self, value, type, subtype) -> None:
         super().__init__()
@@ -32,12 +35,6 @@ def test_concat_right_err():
     run = get_interpreter(tokens)
     assert run is not None
     assert run({}) == "#REF!"
-
-def test_concat_both_err():
-    tokens = [None, None, ManualToken("&", "OPERATOR-INFIX", "")]
-    run = get_interpreter(tokens)
-    assert run is not None
-    assert run({}) == "hi world"
 
 def test_concat_numeric_ok():
     tokens = [TokenNumber(1), TokenNumber(2), ManualToken("&", "OPERATOR-INFIX", "")]

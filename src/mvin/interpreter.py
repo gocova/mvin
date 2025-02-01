@@ -71,10 +71,11 @@ def get_interpreter(
             inputs: Set[str] = set()
 
             for i, token in enumerate(tokens):
-                #! TODO what should happen with token is None
                 logging.debug(
                     f"--------\noutput: {output}\nop_stack: {op_stack}\narg_count: {arg_stack}\ntoken: {token}"
                 )
+                if token is None:
+                    raise SyntaxError(f"Unexpected None value found at position {i}.")
                 if token.type == "OPERAND":
                     output.append(token)
 
