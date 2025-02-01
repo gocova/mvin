@@ -4,6 +4,8 @@ from collections import deque
 from types import MappingProxyType
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple
 
+import mvin.excel_ops as _  # noqa: F401
+
 from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes
 from mvin.functions.excel_lib import DEFAULT_FUNCTIONS
 
@@ -32,7 +34,7 @@ def get_interpreter(
     tokens: Sequence[Token],  # enumerable
     proposed_functions: Dict[str, Tuple[List | None, Callable]] = DEFAULT_FUNCTIONS,
     registered_ops: Dict[str, Callable[[Token, Token], Token]] = REGISTERED_OPS,
-) -> Callable[[Dict[str, Any], Any]] | None:
+) -> Callable[[Dict[str, Any]], Any] | None:
     if isinstance(tokens, Sequence):
         ops = MappingProxyType(registered_ops)
         functions = MappingProxyType(proposed_functions)
@@ -118,7 +120,7 @@ def get_interpreter(
                         )
                     ):
                         output.append(op_stack.pop())
-                    op_stack.append(token_value)
+                    op_stack.append(token)
 
                 elif token.value == "(":  # Left parenthesis
                     if i > 0 and tokens[i - 1].type == "OPERAND":
@@ -259,8 +261,8 @@ def get_interpreter(
 
                 return stack.pop().value
 
-            # evaluate_rpn.inputs = inputs_set
             evaluate_rpn.__setattr__("inputs", inputs_set)
             return evaluate_rpn
 
+        return execute_func(rpn_tokens, inputs)
     return None

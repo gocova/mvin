@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Minimum Viable Interpreter for Excel individual formulas"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+]
 
 [tool.pyright]
 venvPath = "."
