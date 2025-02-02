@@ -1,26 +1,61 @@
+"""
+This module defines various token classes and utility functions for registering and handling operations on tokens.
+The valid combinations for the token classes are as follows:
+    type: OPERAND
+    subtype: LOGICAL | TEXT | NUMBER | ERROR | ARRAY | RANGE
+
+Classes:
+    Token: Abstract base class for all tokens.
+    BaseToken: Base class implementing the Token interface.
+    TokenBool: Token class for boolean values.
+    TokenString: Token class for string values.
+    TokenNumber: Token class for numeric values.
+    TokenFunc: Token class for function names.
+    TokenError: Token class for error values.
+    TokenErrorTypes: Enum class for different types of token errors.
+
+Functions:
+    register_op: Decorator to register operator functions with multiple names.
+    register_numeric_op: Decorator to register numeric operator functions with multiple names.
+
+Constants:
+    REGISTERED_OPS: Dictionary to store registered operations.
+"""
+
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import Dict, Callable, Any, Tuple
 
 
 class Token(metaclass=ABCMeta):
+    """
+    Abstract base class for all tokens.
+    """
+
     @property
     @abstractmethod
     def type(self) -> str:
+        """Returns the type of the token."""
         pass
 
     @property
     @abstractmethod
     def subtype(self) -> str:
+        """Returns the subtype of the token."""
         pass
 
     @property
     @abstractmethod
     def value(self) -> Any:
+        """Returns the value of the token."""
         pass
 
 
 class BaseToken(Token):
+    """
+    Base class implementing the Token interface.
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self._value = None
@@ -29,21 +64,29 @@ class BaseToken(Token):
 
     @property
     def type(self) -> str:
+        """Returns the type of the token."""
         return self._type
 
     @property
     def subtype(self) -> str:
+        """Returns the subtype of the token."""
         return self._subtype
 
     @property
     def value(self) -> Any:
+        """Returns the value of the token."""
         return self._value
 
     def __repr__(self) -> str:
+        """Returns a string representation of the token."""
         return f"Token<v:{self.value} t:{self.type} s:{self.subtype} >"
 
 
 class TokenBool(BaseToken):
+    """
+    Token class for boolean values.
+    """
+
     def __init__(self, value: bool) -> None:
         super().__init__()
         self._value = value
@@ -52,6 +95,10 @@ class TokenBool(BaseToken):
 
 
 class TokenString(BaseToken):
+    """
+    Token class for string values.
+    """
+
     def __init__(self, value: str) -> None:
         super().__init__()
         self._value = value
@@ -60,6 +107,10 @@ class TokenString(BaseToken):
 
 
 class TokenNumber(BaseToken):
+    """
+    Token class for numeric values.
+    """
+
     def __init__(self, value: float | int) -> None:
         super().__init__()
         self._value = value
@@ -68,6 +119,10 @@ class TokenNumber(BaseToken):
 
 
 class TokenFunc(BaseToken):
+    """
+    Token class for function names.
+    """
+
     def __init__(self, func_name: str) -> None:
         super().__init__()
         self._value = func_name
@@ -88,9 +143,16 @@ TokenErrorTypes = Enum(
         ("GETTING_DATA", "#GETTING_DATA"),
     ],
 )
+"""
+Enum class for different types of token errors.
+"""
 
 
 class TokenError(BaseToken):
+    """
+    Token class for error values.
+    """
+
     def __init__(self, error_type: TokenErrorTypes, message: str) -> None:
         super().__init__()
         self._value = error_type.value
@@ -100,6 +162,7 @@ class TokenError(BaseToken):
 
     @property
     def message(self) -> str:
+        """Returns the error message."""
         return self._message
 
 
@@ -107,8 +170,16 @@ class TokenError(BaseToken):
 REGISTERED_OPS: Dict[str, Callable[[Token, Token], Token]] = {}
 
 
-# Decorator to register operator functions with multiple names
 def register_op(*names):
+    """
+    Decorator to register operator functions with multiple names.
+
+    Args:
+        *names: Variable length argument list of names to register the function under.
+
+    Returns:
+        The decorator function.
+    """
     def decorator(func: Callable):
         for key in names:
             REGISTERED_OPS[key] = func
@@ -117,11 +188,11 @@ def register_op(*names):
     return decorator
 
 
-OpType = Callable[  # operator
-    [  # operator arguments
+OpType = Callable[
+    [
         int | float,  # arg: a
         int | float,  # arg: b
-    ],  # returning
+    ],
     int | float,  # -> op(a,b)
 ]
 
@@ -129,13 +200,22 @@ OpRelType = Tuple[str, OpType]
 
 
 def register_numeric_op(
-    *pairs: OpRelType,  # by using * we are stating that we will have a variable number of OpRelType (like Tuple[OpRelType,...])
+    *pairs: OpRelType,
 ):
+    """
+    Decorator to register numeric operator functions with multiple names.
+
+    Args:
+        *pairs: Variable length argument list of tuples containing operator names and functions.
+
+    Returns:
+        The decorator function.
+    """
     def decorator(
         wrap_operator: Callable[
-            [  # arguments
+            [
                 OpType
-            ],  # returns
+            ],
             Callable[[Token, Token], Token],
         ],
     ):
