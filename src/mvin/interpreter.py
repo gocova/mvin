@@ -42,7 +42,7 @@ def get_interpreter(
         def infix_to_rpn(
             tokens: Sequence[Token],  # tokens from the tokenizer
             functions: Mapping[str, Tuple[List | None, Callable]],
-        ) -> Tuple[Tuple[Token], Set[str]]:
+        ) -> Tuple[Tuple[Token | int], Set[str]]:
             """
             Convert an infix expression to Reverse Polish Notation (RPN).
 
@@ -63,7 +63,7 @@ def get_interpreter(
             """
             output = []
             op_stack = deque()
-            arg_stack = (
+            arg_stack: deque[int] = (
                 deque()
             )  # Keeps track of argument counts for nested function calls
             open_parens = 0
@@ -167,7 +167,22 @@ def get_interpreter(
                             raise SyntaxError(
                                 f"Function `{func_name}` expects {len(defined_func_args)} arguments but got {arg_count}."
                             )
-                        # output.append(func_name)
+                        # There are 2 ways to go to correct the arg_count bug:
+                        #  - Use the stack to store the arg_count:
+                        #    * append the arg_count first as int (and in the execute part, read it from stack)
+                        #    * append the TokenFunc
+                        #
+                        #    > This option pollutes the stack by mixing types
+                        #    > There is a possibility to have more dynamic variable arguments calling by putting
+                        #      the value in the stack
+                        #
+                        #  - Use the output to store the arg_count and read it directly when execute
+                        #    * appent the TokenFunc
+                        #    * append the arg_count as int (and read it just after the TokenFunc, and it will never reach the Token evaluation)
+                        #
+                        #    > This options requires an additional index to track the rpn_tokens' position
+                        #
+                        #  I preferred the non pullution version (the second one)
                         output.append(TokenFunc(func_name))
                         output.append(arg_count)
 
@@ -205,16 +220,25 @@ def get_interpreter(
         print(f"rpn_tokens: {rpn_tokens}")
 
         def execute_func(
-            rpn_tokens: Tuple[Token], inputs_set: Set[str]
+            rpn_tokens: Tuple[Token | int], inputs_set: Set[str]
         ) -> Callable[[Dict[str, typing.Any]], Any]:
             def evaluate_rpn(inputs: Dict[str, typing.Any] = {}) -> typing.Any:
                 immutable_inputs: Mapping[str, Any] = MappingProxyType(inputs)
 
                 stack = deque()
 
-                for token in rpn_tokens:
+                i = 0  # Token index for argument count retrieval
+
+                while i < len(rpn_tokens):
+                    token = rpn_tokens[i]
+                    i += 1  # Move to the next token
                     print(token)
-                    if token.type == "OPERAND":
+
+                    if isinstance(token, int):
+                        raise ValueError(
+                            f"Unexpected token (int: {token}) at position {i} "
+                        )
+                    elif token.type == "OPERAND":
                         if token.subtype != "RANGE":
                             stack.append(token)
                         else:
@@ -252,12 +276,46 @@ def get_interpreter(
                                     f" Operator '{token.value}' is not implemented"
                                 )
                     elif token.type == "FUNC" and token.subtype == "OPEN":
-                        arg_count = stack.pop()  # get number of arguments for the call
+                        func_name = token.value
+
+                        if i >= len(rpn_tokens):
+                            raise ValueError(
+                                f"Missing argument count for function `{func_name}`."
+                            )
+
+                        arg_count = rpn_tokens[
+                            i
+                        ]  # Read argument count from tokens, not stack
+                        i += 1  # Move to next token after argument count
+
                         if isinstance(arg_count, int):
-                            raise NotImplementedError()
+                            args = [
+                                stack.pop() if stack else None for _ in range(arg_count)
+                            ][::-1]
+                            print(f"`{func_name}`-> args: {args}")
+
+                            # Get function default values
+                            func_defaults, func_callable = functions[func_name]
+
+                            if func_defaults is not None:
+                                required_count = len(func_defaults)
+                                if len(args) < required_count:
+                                    args.extend(
+                                        func_defaults[len(args) :]
+                                    )  # Fill missing arguments with defaults
+                                elif len(args) > required_count:
+                                    raise ValueError(
+                                        f"Function `{token}` expects {required_count} arguments but got {len(args)}."
+                                    )
+                            print(f"`{func_name}`-> args(refined): {args}")
+
+                            func_result = func_callable(*args)
+                            print(f"`{func_name}`-> result: {func_result}")
+                            if func_result:
+                                stack.append(func_result)
                         else:
                             raise ValueError(
-                                f"Expected number of arguments in the stack (integer) but found {arg_count}"
+                                f"Expected number count for function `{func_name}`, but found {arg_count}"
                             )
 
                 if len(stack) != 1:

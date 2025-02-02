@@ -100,7 +100,7 @@ def test_excel_not_func_ok_result():
     tokens = [ManualToken("NOT(", "FUNC", "OPEN"), TokenBool(True), ManualToken(")", "FUNC", "CLOSE")]
     f = get_interpreter(tokens)
     assert f is not None
-    assert f({}).value == False
+    assert f({}) == False
 
 
 def test_double_close():
