@@ -4,7 +4,7 @@ from collections import deque
 from types import MappingProxyType
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple
 
-import mvin.excel_ops as __  # noqa: F401
+import mvin.excel_ops as _ # noqa
 
 from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes, TokenFunc
 from mvin.functions.excel_lib import DEFAULT_FUNCTIONS
