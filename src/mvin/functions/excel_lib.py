@@ -10,7 +10,7 @@ def excel_not(token: Token) -> Token:
             return TokenBool(not (token.value != 0))
     return TokenError(
         TokenErrorTypes.VALUE,
-        f"Expected boolean or number but '{token.subtype}' was found (value: {token.value}",
+        f"Expected boolean or number and found {token}",
     )
 
 
