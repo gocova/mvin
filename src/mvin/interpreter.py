@@ -4,9 +4,9 @@ from collections import deque
 from types import MappingProxyType
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple
 
-import mvin.excel_ops as _  # noqa: F401
+import mvin.excel_ops as __  # noqa: F401
 
-from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes
+from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes, TokenFunc
 from mvin.functions.excel_lib import DEFAULT_FUNCTIONS
 
 # Operator precedence and associativity
@@ -142,17 +142,12 @@ def get_interpreter(
                     # Ensure trailing empty argument handling
                     last_token = tokens[i - 1] if i > 0 else None
                     logging.debug(f"last_token: {last_token}")
-                    if token.type == "FUNC" and token.subtype == "OPEN":
-                        func_name = token.value
-                        if (
-                            functions[func_name] == ()
-                        ):  # Zero-arg function, no need for 'None'
+                    if last_token:
+                        if last_token.type == "FUNC" and last_token.subtype == "OPEN":
                             arg_stack[-1] = 0
-                        else:
-                            output.append("None")  # Mark missing argument
 
-                    elif last_token and last_token.value == ",":
-                        output.append("None")  # Handle missing last argument
+                        elif last_token.value == ",":
+                            output.append("None")  # Handle missing last argument
 
                     while op_stack and op_stack[-1] != "(":
                         output.append(op_stack.pop())
@@ -164,7 +159,7 @@ def get_interpreter(
                     if op_stack and token.type == "FUNC" and token.subtype == "CLOSE":
                         func_name = op_stack.pop()
                         arg_count = arg_stack.pop()  # Use dynamic argument count
-                        defined_func_args = functions[func_name]
+                        defined_func_args, _ = functions[func_name]
                         if (
                             defined_func_args is not None
                             and len(defined_func_args) != arg_count
@@ -172,7 +167,8 @@ def get_interpreter(
                             raise SyntaxError(
                                 f"Function `{func_name}` expects {len(defined_func_args)} arguments but got {arg_count}."
                             )
-                        output.append(func_name)
+                        # output.append(func_name)
+                        output.append(TokenFunc(func_name))
                         output.append(arg_count)
 
                 elif (
@@ -206,6 +202,7 @@ def get_interpreter(
             return tuple(output), inputs
 
         rpn_tokens, inputs = infix_to_rpn(tokens, functions)
+        print(f"rpn_tokens: {rpn_tokens}")
 
         def execute_func(
             rpn_tokens: Tuple[Token], inputs_set: Set[str]
@@ -216,6 +213,7 @@ def get_interpreter(
                 stack = deque()
 
                 for token in rpn_tokens:
+                    print(token)
                     if token.type == "OPERAND":
                         if token.subtype != "RANGE":
                             stack.append(token)
@@ -254,7 +252,13 @@ def get_interpreter(
                                     f" Operator '{token.value}' is not implemented"
                                 )
                     elif token.type == "FUNC" and token.subtype == "OPEN":
-                        raise NotImplementedError()
+                        arg_count = stack.pop()  # get number of arguments for the call
+                        if isinstance(arg_count, int):
+                            raise NotImplementedError()
+                        else:
+                            raise ValueError(
+                                f"Expected number of arguments in the stack (integer) but found {arg_count}"
+                            )
 
                 if len(stack) != 1:
                     raise ValueError(
