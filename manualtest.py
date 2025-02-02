@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("src")
 
-from mvin import BaseToken, TokenString, TokenNumber
+from mvin import BaseToken, TokenString, TokenNumber, TokenBool
 from mvin.interpreter import get_interpreter
 
 import logging
@@ -32,3 +32,8 @@ tokens = [TokenNumber(1), TokenNumber(2), ManualToken("+", "OPERATOR-INFIX", "")
 run = get_interpreter(tokens)
 if run:
     print(run({}))
+
+tokens = [ManualToken("NOT(", "FUNC", "OPEN"), TokenBool(True), ManualToken(")", "FUNC", "CLOSE")]
+f = get_interpreter(tokens)
+if f:
+    print(f({}))
