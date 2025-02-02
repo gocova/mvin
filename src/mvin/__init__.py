@@ -1,9 +1,9 @@
-from abc import ABCMeta, abstractmethod, ABC
+from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import Dict, Callable, Any, Tuple
 
 
-class Token(ABC, metaclass=ABCMeta):
+class Token(metaclass=ABCMeta):
     @property
     @abstractmethod
     def type(self) -> str:
@@ -65,6 +65,14 @@ class TokenNumber(BaseToken):
         self._value = value
         self._type = "OPERAND"
         self._subtype = "NUMBER"
+
+
+class TokenFunc(BaseToken):
+    def __init__(self, func_name: str) -> None:
+        super().__init__()
+        self._value = func_name
+        self._type = "FUNC"
+        self._subtype = "OPEN"
 
 
 TokenErrorTypes = Enum(
