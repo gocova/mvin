@@ -92,16 +92,21 @@ def test_non_existing_func():
 
 def test_excel_not_func_incomplete_call():
     tokens = [ManualToken("NOT(", "FUNC", "OPEN"), ManualToken(")", "FUNC", "CLOSE")]
+
     with pytest.raises(SyntaxError) as exc_info:
         get_interpreter(tokens)
 
-    assert str(exc_info.value) == "Function `NOT(` expects 1 arguments but got 0."
+    assert str(exc_info.value) == "Missing required argument at 0 for function `NOT(`"
+    # with pytest.raises(SyntaxError) as exc_info:
+
+
+    # assert str(exc_info.value) == "Function `NOT(` expects 1 arguments but got 0."
 
 def test_excel_not_func_ok_result():
     tokens = [ManualToken("NOT(", "FUNC", "OPEN"), TokenBool(True), ManualToken(")", "FUNC", "CLOSE")]
     f = get_interpreter(tokens)
     assert f is not None
-    assert f({}) == False
+    assert not f({})
 
 
 def test_double_close():
@@ -287,6 +292,34 @@ def test_too_many_args():
         TokenNumber(1),
         ManualToken(")", "FUNC", "CLOSE"),
     ]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+    assert str(exc_info.value) == 'Function `SEARCH(` expects 3 arguments but got 4.'
+
+def test_double_open_par():
+    tokens = [
+        TokenNumber(0),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+
+    ]
     f = get_interpreter(tokens)
     assert f is not None
-    assert f({}) == "#VALUE!"
+    with pytest.raises(ValueError) as exc_info:
+        f({})
+    assert str(exc_info.value) == "Not enough values for operation '+'."
+
+def test_required_missing_args():
+    tokens = [
+        ManualToken("SEARCH(", "FUNC", "OPEN"),
+        TokenNumber(1),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(1),
+        ManualToken(",", "SEP", "ARG"),
+        ManualToken(",", "SEP", "ARG"),
+        ManualToken(")", "FUNC", "CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    with pytest.raises(ValueError) as exc_info:
+        f({})
+    assert str(exc_info.value) == "Missing required argument at 1 for function `SEARCH(`"

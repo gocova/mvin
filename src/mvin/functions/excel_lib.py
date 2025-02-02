@@ -1,6 +1,6 @@
 import logging
 from typing import Callable, Dict, List, Tuple
-from mvin import Token, TokenBool, TokenError, TokenErrorTypes, TokenNumber
+from mvin import Token, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenString
 
 
 def excel_not(token: Token) -> Token:
@@ -110,7 +110,7 @@ DEFAULT_FUNCTIONS: Dict[str, Tuple[List | None, Callable]] = {
     ),
     "SEARCH(": (
         [
-            None,  # find_text
+            TokenString(""),  # find_text
             None,  # within_text
             TokenNumber(1),  # start_num --> default: 1
         ],  # default argument list (if None is in the list, that argument is not optional)

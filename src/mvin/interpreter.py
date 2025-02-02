@@ -176,17 +176,35 @@ def get_interpreter(
 
                         #!!! DESIGN DECISION
                         #
-                        # arg_count full validation now left to rpn evaluation (for simplicity sake),
-                        # so next code is just to identify exceeded arg_count (if not variable)
+                        # arg_count full validation: We are filling the missing part of the arguments
                         #
-                        required_args_count, _ = functions[func_name]
-                        if (
-                            required_args_count is not None
-                            and len(required_args_count) < arg_count
-                        ):
-                            raise SyntaxError(
-                                f"Function `{func_name}` expects {len(required_args_count)} arguments but got {arg_count}."
+                        required_args, _ = functions[func_name]
+                        if required_args is not None:
+                            required_args_count = len(required_args)
+
+                            if required_args_count < arg_count:
+                                raise SyntaxError(
+                                    f"Function `{func_name}` expects {required_args_count} arguments but got {arg_count}."
+                                )
+
+                            # copy defaults to stack if not None
+                            print(
+                                f" --> arg_count:{arg_count} required_args_count:{required_args_count}"
                             )
+                            arg_index = arg_count
+                            while arg_index < required_args_count:
+                                default_arg = required_args[arg_index]
+                                print(
+                                    f"   --> arg_index:{arg_index} default_arg: {default_arg}"
+                                )
+                                if default_arg is not None:
+                                    output.append(default_arg)
+                                else:
+                                    raise SyntaxError(
+                                        f"Missing required argument at {arg_index} for function `{func_name}`"
+                                    )
+                                arg_index += 1
+                            arg_count = required_args_count
 
                         #!!! DESIGN DECISION
                         #
@@ -260,7 +278,8 @@ def get_interpreter(
                     print(token)
 
                     if token is None:
-                        raise ValueError(f"Unexpected None at position {i}")
+                        # raise ValueError(f"Unexpected None at position {i}")
+                        stack.append(token)
                     elif isinstance(token, int):
                         raise ValueError(
                             f"Unexpected token (int: {token}) at position {i} "
@@ -325,16 +344,25 @@ def get_interpreter(
                             func_defaults, func_callable = functions[func_name]
 
                             if func_defaults is not None:
-                                required_count = len(func_defaults)
-                                if len(args) < required_count:
-                                    args.extend(
-                                        func_defaults[len(args) :]
-                                    )  # Fill missing arguments with defaults
-                                elif len(args) > required_count:
+                                required_args_count = len(func_defaults)
+                                if len(args) != required_args_count:
                                     raise ValueError(
-                                        f"Function `{token}` expects {required_count} arguments but got {len(args)}."
+                                        f"Function `{token}` expects {required_args_count} arguments but got {len(args)}."
                                     )
-                            print(f"`{func_name}`-> args(refined): {args}")
+                                arg_index = 0
+                                while arg_index < required_args_count:
+                                    default_value = func_defaults[arg_index]
+                                    print(
+                                        f" *-> Eval#{func_name} :: {arg_index} | {args[arg_index]} | {default_value}"
+                                    )
+                                    if (
+                                        default_value is None
+                                        and args[arg_index] is None
+                                    ):
+                                        raise ValueError(
+                                            f"Missing required argument at {arg_index} for function `{func_name}`"
+                                        )
+                                    arg_index += 1
 
                             func_result = func_callable(*args)
                             print(f"`{func_name}`-> result: {func_result}")
