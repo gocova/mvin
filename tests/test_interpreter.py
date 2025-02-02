@@ -116,3 +116,71 @@ def test_operator_after_open():
         get_interpreter(tokens)
 
     assert str(exc_info.value) == "Unexpected operator `Token<v:+ t:OPERATOR-INFIX s: >` at position 1."
+
+def test_missing_operator_before_par():
+    tokens = [TokenNumber(2), ManualToken("(", "PAREN", "OPEN")]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+
+    assert str(exc_info.value) == "Missing operator before '(' at position 1."
+
+def test_handle_missing_last_argument():
+    tokens = [
+        ManualToken("NOT(", "FUNC", "OPEN"),
+        TokenBool(True),
+        ManualToken(",", "SEP", "ARG"),
+        ManualToken(")", "FUNC", "CLOSE")
+    ]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+
+    assert str(exc_info.value) == "Function `NOT(` expects 1 arguments but got 2."
+
+def test_handle_missing_argument():
+    tokens = [
+        ManualToken("NOT(", "FUNC", "OPEN"),
+        ManualToken(",", "SEP", "ARG"),
+        ManualToken(")", "FUNC", "CLOSE")
+    ]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+
+    assert str(exc_info.value) == "Function `NOT(` expects 1 arguments but got 2."
+
+def test_handle_WSPACE():
+    tokens = [
+        ManualToken("", "WHITE-SPACE", "")
+        , TokenBool(True)
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+
+    assert f({})
+
+def test_raise_unrecognized_token():
+    tokens = [
+        ManualToken("XX", "OPERATOR", ""),
+    ]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+
+    assert str(exc_info.value) == "Unrecognized token `Token<v:XX t:OPERATOR s: >` at position 0."
+
+def test_raise_unmatched_par():
+    tokens = [
+        ManualToken("(", "PAREN", "OPEN"), # First (
+    ]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+
+    assert str(exc_info.value) == "Unmatched `(` (missing closing parenthesis)."
+
+def test_raise_missing_operator_before_open_par():
+    tokens = [
+        TokenNumber(2),
+        ManualToken("(", "PAREN", "OPEN"),
+    ]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+
+    assert str(exc_info.value) == "Missing operator before '(' at position 1."
