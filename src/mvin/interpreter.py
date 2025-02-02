@@ -4,7 +4,7 @@ from collections import deque
 from types import MappingProxyType
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple
 
-import mvin.excel_ops as _ # noqa
+import mvin.excel_ops as _  # noqa
 
 from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes, TokenFunc
 from mvin.functions.excel_lib import DEFAULT_FUNCTIONS
@@ -292,7 +292,7 @@ def get_interpreter(
                                 stack.append(op(a, b))
                             else:
                                 raise NotImplementedError(
-                                    f" Operator '{token.value}' is not implemented"
+                                    f"Operator '{token.value}' is not implemented"
                                 )
                     elif token.type == "FUNC" and token.subtype == "OPEN":
                         func_name = token.value

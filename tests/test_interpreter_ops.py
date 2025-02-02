@@ -1,7 +1,7 @@
 import sys
+sys.path.append('src')
 
 import pytest
-sys.path.append('src')
 
 from mvin import BaseToken, TokenError, TokenErrorTypes, TokenNumber, TokenString
 from mvin.interpreter import get_interpreter
@@ -80,11 +80,14 @@ def test_excel_eq_right_error():
     result = run({})
     assert result == "#NUM!"
 
-# def test_excel_eq_non_value():
-#     tokens = [TokenNumber(0),TokenError(
-#         TokenErrorTypes.NUM, "Undefined message"
-#     ),  ManualToken("NOT(", "FUNC", "OPEN")]
-#     run = get_interpreter(tokens)
-#     assert run is not None
-#     result = run({})
-#     assert result == "#NUM!"
+def test_excel_op_raise_op_not_implemented():
+    tokens = [
+        TokenNumber(0),
+        ManualToken("%", "OPERATOR-INFIX", "OPEN"),
+        TokenNumber(1)
+    ]
+    f=get_interpreter(tokens)
+    assert f is not None
+    with pytest.raises(NotImplementedError) as exc_info:
+        f({})
+    assert str(exc_info.value) == "Operator '%' is not implemented"

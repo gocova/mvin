@@ -20,7 +20,7 @@ def test_single_bool_ok():
     tokens = [TokenBool(True)]
     run = get_interpreter(tokens)
     assert run is not None
-    assert run({}) == True
+    assert run({})
 
 def test_single_text_ok():
     tokens = [TokenString("hi")]
@@ -80,9 +80,10 @@ def test_none_as_list():
     assert run_as_none is None
 
 def test_incomplete_call():
-    tokens = [ManualToken("GONZ(", "FUNC", "OPEN")]
-    with pytest.raises(SyntaxError):
+    tokens = [ManualToken("SEARCH(", "FUNC", "OPEN")]
+    with pytest.raises(SyntaxError) as exc_info:
         get_interpreter(tokens)
+    assert str(exc_info.value) == "Unmatched `(` (missing closing parenthesis)."
 
 def test_non_existing_func():
     tokens = [ManualToken("ROBIN(", "FUNC", "OPEN"), ManualToken(")", "FUNC", "CLOSE")]
@@ -187,7 +188,11 @@ def test_raise_missing_operator_before_open_par():
 
 def test_multiple_operations():
     tokens = [
+        ManualToken("(", "PAREN", "OPEN"),
         TokenNumber(2),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(0),
+        ManualToken(")", "PAREN", "CLOSE"),
         ManualToken("*", "OPERATOR-INFIX", ""),
         ManualToken("(", "PAREN", "OPEN"),
         TokenNumber(10),
@@ -251,6 +256,34 @@ def test_complex_search_call_returns_not_found():
         ManualToken(",", "SEP", "ARG"),
         TokenNumber(1),
         ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(1),
+        ManualToken(")", "FUNC", "CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == "#VALUE!"
+
+
+def test_incomplete_definition():
+    tokens = [
+        TokenNumber(0),
+        TokenNumber(1)
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    with pytest.raises(ValueError) as exc_info:
+        f({})
+    assert str(exc_info.value) == 'Formula evaluation error: too many values remaining.'
+
+def test_too_many_args():
+    tokens = [
+        ManualToken("SEARCH(", "FUNC", "OPEN"),
+        TokenString("hi"),
+        ManualToken(",", "SEP", "ARG"),
+        TokenString("hi world"),
+        ManualToken(",", "SEP", "ARG"),
+        TokenNumber(1),
+        ManualToken(",", "SEP", "ARG"),
         TokenNumber(1),
         ManualToken(")", "FUNC", "CLOSE"),
     ]
