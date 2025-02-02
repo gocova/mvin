@@ -70,7 +70,10 @@ def get_interpreter(
 
             inputs: Set[str] = set()
 
-            for i, token in enumerate(tokens):
+            for i, token in enumerate(
+                # Filter whitespace to simply logic
+                [x for x in tokens if x is None or x.type != "WHITE-SPACE"]
+            ):
                 logging.debug(
                     f"--------\noutput: {output}\nop_stack: {op_stack}\narg_count: {arg_stack}\ntoken: {token}"
                 )
@@ -171,6 +174,11 @@ def get_interpreter(
                         func_name = func.value
                         arg_count = arg_stack.pop()  # Use dynamic argument count
 
+                        #!!! DESIGN DECISION
+                        #
+                        # arg_count full validation now left to rpn evaluation (for simplicity sake),
+                        # so next code is just to identify exceeded arg_count (if not variable)
+                        #
                         required_args_count, _ = functions[func_name]
                         if (
                             required_args_count is not None
@@ -217,8 +225,8 @@ def get_interpreter(
                             1  # Increase count for the current function call
                         )
 
-                elif token.type == "WHITE-SPACE":
-                    pass
+                # elif token.type == "WHITE-SPACE":
+                #     pass
 
                 else:
                     raise SyntaxError(f"Unrecognized token `{token}` at position {i}.")
@@ -333,8 +341,8 @@ def get_interpreter(
                             if func_result:
                                 stack.append(func_result)
                         else:
-                            raise ValueError(
-                                f"Expected number count for function `{func_name}`, but found {arg_count}"
+                            raise RuntimeError(
+                                f"Expected an interger arg_count for function `{func_name}`'s arg_count, but found {arg_count}"
                             )
 
                 if len(stack) != 1:
