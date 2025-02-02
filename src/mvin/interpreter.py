@@ -2,7 +2,7 @@ import logging
 import typing
 from collections import deque
 from types import MappingProxyType
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple
+from typing import Any, Callable, Dict, List, Literal, Mapping, Sequence, Set, Tuple
 
 import mvin.excel_ops as __  # noqa: F401
 
@@ -42,7 +42,7 @@ def get_interpreter(
         def infix_to_rpn(
             tokens: Sequence[Token],  # tokens from the tokenizer
             functions: Mapping[str, Tuple[List | None, Callable]],
-        ) -> Tuple[Tuple[Token | int], Set[str]]:
+        ) -> Tuple[List[Token | int | None], Set[str]]:
             """
             Convert an infix expression to Reverse Polish Notation (RPN).
 
@@ -61,8 +61,8 @@ def get_interpreter(
                 operators and argument counts, and includes detailed error handling to
                 provide informative messages for various syntax issues.
             """
-            output = []
-            op_stack = deque()
+            output: List[Token | int | None] = []
+            op_stack: deque[Token] = deque()
             arg_stack: deque[int] = (
                 deque()
             )  # Keeps track of argument counts for nested function calls
@@ -88,12 +88,13 @@ def get_interpreter(
                         raise SyntaxError(
                             f"Unsupported function `{token.value}` at position {i}."
                         )
-                    op_stack.append(func_name)
+                    # op_stack.append(func_name)
+                    op_stack.append(token)
                     arg_stack.append(
                         1
                     )  # Start with one argument for this instance of the function
 
-                    op_stack.append("(")
+                    op_stack.append(TokenFunc("("))
                     open_parens += 1
 
                 elif token.type == "OPERATOR-INFIX":
@@ -107,21 +108,21 @@ def get_interpreter(
                     token_value = token.value
                     while (
                         op_stack
-                        and op_stack[-1] in OPERATORS
+                        and op_stack[-1].value in OPERATORS
                         and (
                             (
                                 OPERATORS[token_value][1] == "L"
                                 and OPERATORS[token_value][0]
-                                <= OPERATORS[op_stack[-1]][0]
+                                <= OPERATORS[op_stack[-1].value][0]
                             )
                             or (
                                 OPERATORS[token_value][1] == "R"
                                 and OPERATORS[token_value][0]
-                                < OPERATORS[op_stack[-1]][0]
+                                < OPERATORS[op_stack[-1].value][0]
                             )
                         )
                     ):
-                        output.append(op_stack.pop())
+                        output.append(op_stack.pop())  # TODO Improve test coverage
                     op_stack.append(token)
 
                 elif token.value == "(":  # Left parenthesis
@@ -129,7 +130,7 @@ def get_interpreter(
                         raise SyntaxError(
                             f"Missing operator before '(' at position {i}."
                         )
-                    op_stack.append(token.value)
+                    op_stack.append(token)
                     open_parens += 1
 
                 elif token.value == ")":  # Right parenthesis
@@ -147,26 +148,40 @@ def get_interpreter(
                             arg_stack[-1] = 0
 
                         elif last_token.value == ",":
-                            output.append("None")  # Handle missing last argument
+                            output.append(None)  # Handle missing last argument
 
-                    while op_stack and op_stack[-1] != "(":
+                    while op_stack and op_stack[-1].value != "(":
                         output.append(op_stack.pop())
 
                     if not op_stack:
                         raise SyntaxError(f"Unmatched `)` at position {i}.")
                     op_stack.pop()  # Remove '('
 
-                    if op_stack and token.type == "FUNC" and token.subtype == "CLOSE":
-                        func_name = op_stack.pop()
+                    if op_stack and op_stack[-1].type == "FUNC":
+                        #!!! DESIGN DECISION
+                        #
+                        # Support closing parenthesis, even when is not of type='FUNC' --> display warning
+                        if token.type != "FUNC":
+                            logging.warning(
+                                f"Expected token of type:`FUNC` and subtype:`CLOSE`, but found token of type:`{token.type}`"
+                            )
+                        # if op_stack and token.type == "FUNC" and token.subtype == "CLOSE":
+                        # func_name = op_stack.pop()
+                        func = op_stack.pop()
+                        func_name = func.value
                         arg_count = arg_stack.pop()  # Use dynamic argument count
-                        defined_func_args, _ = functions[func_name]
+
+                        required_args_count, _ = functions[func_name]
                         if (
-                            defined_func_args is not None
-                            and len(defined_func_args) != arg_count
+                            required_args_count is not None
+                            and len(required_args_count) < arg_count
                         ):
                             raise SyntaxError(
-                                f"Function `{func_name}` expects {len(defined_func_args)} arguments but got {arg_count}."
+                                f"Function `{func_name}` expects {len(required_args_count)} arguments but got {arg_count}."
                             )
+
+                        #!!! DESIGN DECISION
+                        #
                         # There are 2 ways to go to correct the arg_count bug:
                         #  - Use the stack to store the arg_count:
                         #    * append the arg_count first as int (and in the execute part, read it from stack)
@@ -183,7 +198,9 @@ def get_interpreter(
                         #    > This options requires an additional index to track the rpn_tokens' position
                         #
                         #  I preferred the non pullution version (the second one)
-                        output.append(TokenFunc(func_name))
+
+                        # output.append(TokenFunc(func_name))
+                        output.append(func)
                         output.append(arg_count)
 
                 elif (
@@ -192,7 +209,7 @@ def get_interpreter(
                     if tokens[i - 1].subtype == "OPEN" or tokens[i - 1].value == ",":
                         output.append(None)  # Handle missing argument
 
-                    while op_stack and op_stack[-1] != "(":
+                    while op_stack and op_stack[-1].value != "(":
                         output.append(op_stack.pop())
 
                     if arg_stack:
@@ -210,17 +227,17 @@ def get_interpreter(
                 raise SyntaxError("Unmatched `(` (missing closing parenthesis).")
 
             while op_stack:
-                if op_stack[-1] == "(":
+                if op_stack[-1].value == "(":
                     raise SyntaxError("Unmatched `(` in expression.")
                 output.append(op_stack.pop())
 
-            return tuple(output), inputs
+            return output, inputs
 
         rpn_tokens, inputs = infix_to_rpn(tokens, functions)
         print(f"rpn_tokens: {rpn_tokens}")
 
         def execute_func(
-            rpn_tokens: Tuple[Token | int], inputs_set: Set[str]
+            rpn_tokens: Sequence[Token | int | None], inputs_set: Set[str]
         ) -> Callable[[Dict[str, typing.Any]], Any]:
             def evaluate_rpn(inputs: Dict[str, typing.Any] = {}) -> typing.Any:
                 immutable_inputs: Mapping[str, Any] = MappingProxyType(inputs)
@@ -234,7 +251,9 @@ def get_interpreter(
                     i += 1  # Move to the next token
                     print(token)
 
-                    if isinstance(token, int):
+                    if token is None:
+                        raise ValueError(f"Unexpected None at position {i}")
+                    elif isinstance(token, int):
                         raise ValueError(
                             f"Unexpected token (int: {token}) at position {i} "
                         )

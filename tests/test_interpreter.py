@@ -184,3 +184,76 @@ def test_raise_missing_operator_before_open_par():
         get_interpreter(tokens)
 
     assert str(exc_info.value) == "Missing operator before '(' at position 1."
+
+def test_multiple_operations():
+    tokens = [
+        TokenNumber(2),
+        ManualToken("*", "OPERATOR-INFIX", ""),
+        ManualToken("(", "PAREN", "OPEN"),
+        TokenNumber(10),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(2),
+        ManualToken("^", "OPERATOR-INFIX", ""),
+        TokenNumber(3),
+        ManualToken(")", "PAREN", "CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == 36
+
+def test_complex_search_call_with_warning():
+    tokens = [
+        TokenNumber(0),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        ManualToken("SEARCH(", "FUNC", "OPEN"),
+        TokenNumber(1),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(1),
+        ManualToken(",", "SEP", "ARG"),
+        TokenNumber(5),
+        ManualToken("^", "OPERATOR-INFIX", ""),
+        TokenNumber(2),
+        ManualToken(")", "PAREN", "CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == 1
+
+def test_complex_search_call():
+    tokens = [
+        TokenNumber(0),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        ManualToken("SEARCH(", "FUNC", "OPEN"),
+        TokenNumber(1),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(1),
+        ManualToken(",", "SEP", "ARG"),
+        TokenNumber(5),
+        ManualToken("^", "OPERATOR-INFIX", ""),
+        TokenNumber(2),
+        ManualToken(")", "FUNC", "CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == 1
+
+def test_complex_search_call_returns_not_found():
+    """
+    Searching 25 inside 2
+    """
+    tokens = [
+        TokenNumber(0),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        ManualToken("SEARCH(", "FUNC", "OPEN"),
+        TokenNumber(5),
+        ManualToken("^", "OPERATOR-INFIX", ""),
+        TokenNumber(2),
+        ManualToken(",", "SEP", "ARG"),
+        TokenNumber(1),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(1),
+        ManualToken(")", "FUNC", "CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == "#VALUE!"

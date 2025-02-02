@@ -19,21 +19,38 @@ class ManualToken(BaseToken):
         self._subtype = subtype
 
 
+# tokens = [
+#     TokenString("hi "),
+#     TokenString("world"),
+#     ManualToken("&", "OPERATOR-INFIX", ""),
+# ]
+# run = get_interpreter(tokens)
+# if run:
+#     print(run({}))
+
+# tokens = [TokenNumber(1), TokenNumber(2), ManualToken("+", "OPERATOR-INFIX", "")]
+# run = get_interpreter(tokens)
+# if run:
+#     print(run({}))
+
+# tokens = [ManualToken("NOT(", "FUNC", "OPEN"), TokenBool(True), ManualToken(")", "FUNC", "CLOSE")]
+# f = get_interpreter(tokens)
+# if f:
+#     print(f({}))
+
 tokens = [
-    TokenString("hi "),
-    TokenString("world"),
-    ManualToken("&", "OPERATOR-INFIX", ""),
+    TokenNumber(0),
+    ManualToken("+", "OPERATOR-INFIX", ""),
+    ManualToken("SEARCH(", "FUNC", "OPEN"),
+    TokenNumber(5),
+    ManualToken("^", "OPERATOR-INFIX", ""),
+    TokenNumber(2),
+    ManualToken(",", "SEP", "ARG"),
+    TokenNumber(1),
+    ManualToken("+", "OPERATOR-INFIX", ""),
+    TokenNumber(1),
+    ManualToken(")", "PAREN", "CLOSE"),
 ]
-run = get_interpreter(tokens)
-if run:
-    print(run({}))
-
-tokens = [TokenNumber(1), TokenNumber(2), ManualToken("+", "OPERATOR-INFIX", "")]
-run = get_interpreter(tokens)
-if run:
-    print(run({}))
-
-tokens = [ManualToken("NOT(", "FUNC", "OPEN"), TokenBool(True), ManualToken(")", "FUNC", "CLOSE")]
 f = get_interpreter(tokens)
 if f:
     print(f({}))
