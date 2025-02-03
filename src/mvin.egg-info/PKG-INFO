@@ -1,8 +1,15 @@
 Metadata-Version: 2.2
 Name: mvin
-Version: 0.1.0
-Summary: Minimum Viable Interpreter (for Excel individual formulas)
-Requires-Python: >=3.9
+Version: 0.0.0
+Summary: Minimum Viable Interpreter (for single Excel formulas)
+Author-email: Jose Gonzalo Covarrubias <gocova.dev@gmail.com>
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Requires-Python: <4.0,>=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE_APACHE
 License-File: LICENSE_MIT
