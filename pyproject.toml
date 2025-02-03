@@ -1,13 +1,10 @@
 [project]
 name = "mvin"
 version = "0.1.0"
-description = "Minimum Viable Interpreter for Excel individual formulas"
+description = "Minimum Viable Interpreter (for Excel individual formulas)"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = [
-    "pytest>=8.3.4",
-    "pytest-cov>=6.0.0",
-]
+dependencies = []
 
 [tool.pyright]
 venvPath = "."
@@ -15,3 +12,10 @@ venv = "venv"
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
+
+[dependency-groups]
+dev = [
+    "neovim>=0.3.1",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+]
