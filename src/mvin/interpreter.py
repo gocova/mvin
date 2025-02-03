@@ -2,7 +2,7 @@ import logging
 import typing
 from collections import deque
 from types import MappingProxyType
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Union
 
 import mvin.excel_ops as _  # noqa
 
@@ -10,7 +10,7 @@ from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes, TokenFunc
 from mvin.functions.excel_lib import DEFAULT_FUNCTIONS
 
 # Operator precedence and associativity
-OPERATORS: Mapping[str, Tuple[int | float, str]] = MappingProxyType(
+OPERATORS: Mapping[str, Tuple[Union[int, float], str]] = MappingProxyType(
     {
         "&": (0.5, "L"),  # String concatenation
         "=": (0, "L"),
@@ -32,17 +32,19 @@ OPERATORS: Mapping[str, Tuple[int | float, str]] = MappingProxyType(
 
 def get_interpreter(
     tokens: Sequence[Token],  # enumerable
-    proposed_functions: Dict[str, Tuple[List | None, Callable]] = DEFAULT_FUNCTIONS,
+    proposed_functions: Dict[
+        str, Tuple[Union[List, None], Callable]
+    ] = DEFAULT_FUNCTIONS,
     registered_ops: Dict[str, Callable[[Token, Token], Token]] = REGISTERED_OPS,
-) -> Callable[[Dict[str, Any]], Any] | None:
+) -> Union[Callable[[Dict[str, Any]], Any], None]:
     if isinstance(tokens, Sequence):
         ops = MappingProxyType(registered_ops)
         functions = MappingProxyType(proposed_functions)
 
         def infix_to_rpn(
             tokens: Sequence[Token],  # tokens from the tokenizer
-            functions: Mapping[str, Tuple[List | None, Callable]],
-        ) -> Tuple[List[Token | int | None], Set[str]]:
+            functions: Mapping[str, Tuple[Union[List, None], Callable]],
+        ) -> Tuple[List[Union[Token, int, None]], Set[str]]:
             """
             Convert an infix expression to Reverse Polish Notation (RPN).
 
@@ -61,7 +63,7 @@ def get_interpreter(
                 operators and argument counts, and includes detailed error handling to
                 provide informative messages for various syntax issues.
             """
-            output: List[Token | int | None] = []
+            output: List[Union[Token, int, None]] = []
             op_stack: deque[Token] = deque()
             arg_stack: deque[int] = (
                 deque()
@@ -263,7 +265,7 @@ def get_interpreter(
         print(f"rpn_tokens: {rpn_tokens}")
 
         def execute_func(
-            rpn_tokens: Sequence[Token | int | None], inputs_set: Set[str]
+            rpn_tokens: Sequence[Union[Token, int, None]], inputs_set: Set[str]
         ) -> Callable[[Dict[str, typing.Any]], Any]:
             def evaluate_rpn(inputs: Dict[str, typing.Any] = {}) -> typing.Any:
                 immutable_inputs: Mapping[str, Any] = MappingProxyType(inputs)

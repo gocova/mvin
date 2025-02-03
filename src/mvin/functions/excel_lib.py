@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple, Union
 from mvin import Token, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenString
 
 
@@ -20,7 +20,9 @@ def excel_iserror(token: Token) -> Token:
 
 
 def excel_search(
-    find_text: Token | None, within_text: Token | None, start_num: Token | None
+    find_text: Union[Token, None],
+    within_text: Union[Token, None],
+    start_num: Union[Token, None],
 ) -> Token:
     logging.debug(
         f"excel_lib.excel_search: calling with (find_text= {find_text}, within_text={within_text}, start_num= {start_num} )"
@@ -95,7 +97,7 @@ def excel_search(
         )
 
 
-DEFAULT_FUNCTIONS: Dict[str, Tuple[List | None, Callable]] = {
+DEFAULT_FUNCTIONS: Dict[str, Tuple[Union[List, None], Callable]] = {
     "NOT(": (
         [
             None

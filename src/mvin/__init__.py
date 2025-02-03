@@ -24,7 +24,7 @@ Constants:
 
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import Dict, Callable, Any, Tuple
+from typing import Dict, Callable, Any, Tuple, Union
 
 
 class Token(metaclass=ABCMeta):
@@ -111,7 +111,7 @@ class TokenNumber(BaseToken):
     Token class for numeric values.
     """
 
-    def __init__(self, value: float | int) -> None:
+    def __init__(self, value: Union[float, int]) -> None:
         super().__init__()
         self._value = value
         self._type = "OPERAND"
@@ -180,6 +180,7 @@ def register_op(*names):
     Returns:
         The decorator function.
     """
+
     def decorator(func: Callable):
         for key in names:
             REGISTERED_OPS[key] = func
@@ -190,10 +191,10 @@ def register_op(*names):
 
 OpType = Callable[
     [
-        int | float,  # arg: a
-        int | float,  # arg: b
+        Union[int, float],  # arg: a
+        Union[int, float],  # arg: b
     ],
-    int | float,  # -> op(a,b)
+    Union[int, float],  # -> op(a,b)
 ]
 
 OpRelType = Tuple[str, OpType]
@@ -211,11 +212,10 @@ def register_numeric_op(
     Returns:
         The decorator function.
     """
+
     def decorator(
         wrap_operator: Callable[
-            [
-                OpType
-            ],
+            [OpType],
             Callable[[Token, Token], Token],
         ],
     ):
