@@ -231,7 +231,7 @@ def test_complex_search_call_with_warning():
 
 def test_complex_search_call():
     tokens = [
-        TokenNumber(0),
+        TokenNumber(2),
         ManualToken("+", "OPERATOR-INFIX", ""),
         ManualToken("SEARCH(", "FUNC", "OPEN"),
         TokenNumber(1),
@@ -245,7 +245,7 @@ def test_complex_search_call():
     ]
     f = get_interpreter(tokens)
     assert f is not None
-    assert f({}) == 1
+    assert f({}) == 3
 
 def test_complex_search_call_returns_not_found():
     """
