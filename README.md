@@ -102,46 +102,19 @@ SEARCH(substring, text, [start])	Finds the position of substring within text, op
 
 For more advanced use cases, users can extend the function library by passing a custom dictionary of functions to the interpreter.
 
-## 🔍 Advanced Usage
+## ⚠️ Limitations & Roadmap
 
-### 📌 Custom Functions
-
-Users can add their own functions dynamically to extend mvin’s capabilities.
-
-def my_function(args):
-    return sum(args) * 2  # Custom function: sum all args and multiply by 2
-
-interpreter = Interpreter(functions={"MYFUNC": my_function})
-
-tokens = simple_tokenizer("=MYFUNC(1, 2, 3)")  # Should return (1+2+3) * 2 = 12
-result = interpreter.evaluate(tokens)
-
-print(result)  # Output: 12
-
-🔀 Handling Conditional Formatting Use Cases
-
-Since mvin was initially designed as the core interpreter for conditional formatting (condif2css), it efficiently evaluates conditions like:
-
-tokens = simple_tokenizer("=ISERROR(A1)")
-
-result = interpreter.evaluate(tokens)
-print(result)  # Returns TRUE if A1 contains an error
-
-If you’re looking for an interpreter optimized for full workbook calculations, consider alternatives like formulas or xlcalculator.
-
-⚠️ Limitations & Roadmap
-
-Current Limitations
+### Current Limitations
 	•	Limited Built-in Functions – Only NOT, ISERROR, and SEARCH are available. Users must define additional functions as needed.
 	•	No Direct Workbook Integration – Unlike formulas, mvin does not evaluate references across sheets or workbooks.
 	•	No Built-in Tokenizer – Requires an external tokenizer (e.g., openpyxl) to process formulas.
 
-Planned Enhancements
+### Planned Enhancements
 
 ✔️ Improved Function Library – More Excel-like functions such as IF, AND, and OR may be added in future versions.
 ✔️ Thread-Safety Validation – While designed for thread safety, formal testing is needed.
 
-🛠️ Testing & Code Coverage
+## 🛠️ Testing & Code Coverage
 	•	mvin includes a comprehensive test suite with 93% test coverage.
 	•	To run the tests, use:
 
@@ -151,7 +124,7 @@ pytest tests/
 
 	•	If you contribute to mvin, please ensure your changes do not reduce coverage.
 
-⚖️ Comparison with Other Excel Interpreters
+## ⚖️ Comparison with Other Excel Interpreters
 
 Feature	mvin	formulas	xlcalculator
 License	MIT / Apache 2.0	GPL-3.0	MIT
@@ -165,7 +138,7 @@ Designed for	Conditional Formatting	Full Workbook	Full Workbook
 mvin is ideal for lightweight, extendable formula evaluation, particularly in scenarios like conditional formatting where a full Excel engine is unnecessary.
 
 ---
-📜 Changelog & Versioning
+## 📜 Changelog & Versioning
 
 Version 0.5.0b2 (Initial Release)
 
@@ -180,6 +153,7 @@ Version 0.5.0b2 (Initial Release)
 Future releases will focus on:
 ✔ Adding more built-in functions (IF, AND, OR, etc.).
 ✔ Thread-safety validation.
+
 ---
 
 ## License
