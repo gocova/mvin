@@ -3,7 +3,7 @@ sys.path.append('src')
 
 import pytest
 
-from mvin import BaseToken, TokenError, TokenErrorTypes, TokenNumber, TokenString
+from mvin import BaseToken, TokenError, TokenErrorTypes, TokenNumber, TokenString, TokenOperator
 from mvin.interpreter import get_interpreter
 
 class ManualToken(BaseToken):
@@ -42,7 +42,7 @@ def test_concat_numeric_ok():
     assert run({}) == "12"
 
 def test_add_ok():
-    tokens = [TokenNumber(1), ManualToken("+", "OPERATOR-INFIX", ""), TokenNumber(2)]
+    tokens = [TokenNumber(1), TokenOperator("+"), TokenNumber(2)]
     run = get_interpreter(tokens)
     assert run is not None
     result = run({})

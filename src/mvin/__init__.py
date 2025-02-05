@@ -132,6 +132,30 @@ class TokenFunc(BaseToken):
         self._subtype = "OPEN"
 
 
+class TokenOperator(BaseToken):
+    """
+    Token class for operators.
+    """
+
+    def __init__(self, operator: str) -> None:
+        super().__init__()
+        self._value = operator
+        self._type = "OPERATOR-INFIX"
+        self._subtype = ""
+
+
+class TokenParen(BaseToken):
+    """
+    Token class for operators.
+    """
+
+    def __init__(self, subtype: str) -> None:
+        super().__init__()
+        self._value = "(" if subtype == "OPEN" else ")"
+        self._type = "OPERATOR-INFIX"
+        self._subtype = "OPEN" if subtype == "OPEN" else "CLOSE"
+
+
 TokenErrorTypes = Enum(
     "TokenErrorTypes",
     [
