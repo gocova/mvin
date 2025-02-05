@@ -8,6 +8,7 @@
 
 `Mvin` is designed to be **simple, efficient, and easily extendable** Excel's formulas interpreter under a permissive **MIT or Apache 2.0 license**.
 <a href="https://www.buymeacoffee.com/gocova" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ---
 
 ## ✨ Features
@@ -46,7 +47,9 @@ if callable_f is not None:
     result = callable_f({}) # Calling with empty reference/value dictionary
     # result = 3
 ```
+
 ---
+
 ## 💡 Use Cases & Examples
 
 mvin is designed for lightweight, extendable Excel formula evaluation, making it ideal for various scenarios. Here are some common use cases:
@@ -62,7 +65,9 @@ mvin can be used to apply spreadsheet-style validation to incoming data.
 ### 🛠 3. Lightweight Formula Evaluation in Applications --> Implement simple Excel formula support in a web app or database.
 
 If you need Excel-like formula evaluation but don’t want to depend on a full workbook engine like formulas or xlcalculator, mvin offers a minimalist alternative.
+
 ---
+
 ## 📖 Supported Operators & Functions
 
 ### ✅ Operators
@@ -102,6 +107,8 @@ SEARCH(substring, text, [start])	Finds the position of substring within text, op
 
 For more advanced use cases, users can extend the function library by passing a custom dictionary of functions to the interpreter.
 
+---
+
 ## ⚠️ Limitations & Roadmap
 
 ### Current Limitations
@@ -114,6 +121,8 @@ For more advanced use cases, users can extend the function library by passing a 
 ✔️ Improved Function Library – More Excel-like functions such as IF, AND, and OR may be added in future versions.
 ✔️ Thread-Safety Validation – While designed for thread safety, formal testing is needed.
 
+---
+
 ## 🛠️ Testing & Code Coverage
 	•	mvin includes a comprehensive test suite with 93% test coverage.
 	•	To run the tests, use:
@@ -123,6 +132,8 @@ pytest tests/
 '''
 
 	•	If you contribute to mvin, please ensure your changes do not reduce coverage.
+
+---
 
 ## ⚖️ Comparison with Other Excel Interpreters
 
@@ -138,6 +149,7 @@ Designed for	Conditional Formatting	Full Workbook	Full Workbook
 mvin is ideal for lightweight, extendable formula evaluation, particularly in scenarios like conditional formatting where a full Excel engine is unnecessary.
 
 ---
+
 ## 📜 Changelog & Versioning
 
 Version 0.5.0b2 (Initial Release)
