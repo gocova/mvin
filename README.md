@@ -138,14 +138,14 @@ pytest tests/
 
 ## ⚖️ Comparison with Other Excel Interpreters
 
-Feature	mvin	formulas	xlcalculator
-License	MIT / Apache 2.0	GPL-3.0	MIT
-Dependencies	None	Pandas, NumPy	NumPy, OpenPyXL
-Function Support	Minimal (NOT, ISERROR, SEARCH)	Extensive	Extensive
-Operators	Arithmetic & Comparisons	Arithmetic & Logical	Arithmetic & Logical
-Thread Safe	Potentially (Not Tested)	❌	✅
-Tokenizer Required?	Yes (e.g., OpenPyXL)	No	No
-Designed for	Conditional Formatting	Full Workbook	Full Workbook
+| Feature | mvin | formulas | xlcalculator |
+License | MIT / Apache 2.0 | GPL-3.0 | MIT
+Dependencies | None | Pandas, NumPy | NumPy, OpenPyXL
+Function Support | Minimal (NOT, ISERROR, SEARCH) | Extensive | Extensive
+Operators | Arithmetic & Comparisons | Arithmetic & Logical | Arithmetic & Logical
+Thread Safe | Potentially (Not Tested) | ❌ | ✅
+Tokenizer Required? | Yes (e.g., OpenPyXL) | No | No
+Designed for | Conditional Formatting | Full Workbook | Full Workbook
 
 mvin is ideal for lightweight, extendable formula evaluation, particularly in scenarios like conditional formatting where a full Excel engine is unnecessary.
 
