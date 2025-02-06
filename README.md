@@ -87,14 +87,15 @@ The mvin interpreter supports a comprehensive set of numeric and comparison oper
 
 #### Logical Operators
 
-Operator	Description
-=	Equal to
-!=	Not equal to
-<>	Not equal to (alternative notation)
->	Greater than
->=	Greater than or equal to
-<	Less than
-<=	Less than or equal to
+Operator | Description
+| :--: | :--: |
+= | Equal to
+!= | Not equal to
+<> | Not equal to (alternative notation)
+> | Greater than
+>= | Greater than or equal to
+< | Less than
+<= | Less than or equal to
 
 ### 📌 Built-in Functions
 
