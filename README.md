@@ -87,7 +87,7 @@ The mvin interpreter supports a comprehensive set of numeric and comparison oper
 
 #### Logical Operators
 
-Operator | Description
+| Operator | Description |
 | :--: | :--: |
 = | Equal to
 != | Not equal to
