@@ -41,6 +41,9 @@ To use mvin, you need a tokenizer that returns tokens with the following propert
 A predefined set of tokens is available in the module, but you can also use openpyxl for tokenization.
 
 ```python
+from mvin import TokenNumber, TokenOperator
+from mvin.interpreter import get_interpreter
+
 tokens = [TokenNumber(1), TokenOperator("+"), TokenNumber(2)]
 callable_f = get_interpreter(tokens)
 if callable_f is not None:
