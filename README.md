@@ -34,9 +34,9 @@ pip install mvin
 ### Basic Formula Evaluation
 
 To use mvin, you need a tokenizer that returns tokens with the following properties:
-	•	type (string)
-	•	subtype (string)
-	•	value (any)
+* type (string)
+* subtype (string)
+* value (any)
 
 A predefined set of tokens is available in the module, but you can also use openpyxl for tokenization.
 
@@ -54,7 +54,7 @@ if callable_f is not None:
 
 mvin is designed for lightweight, extendable Excel formula evaluation, making it ideal for various scenarios. Here are some common use cases:
 
-### ✅ 1. Conditional Formatting Evaluations --> Automate rules outside of Excel.
+### 1. Conditional Formatting Evaluations --> Automate rules outside of Excel.
 
 Since mvin was originally built as the core interpreter for condif2css (to be released), it excels at evaluating conditions used in Excel’s conditional formatting.
 
@@ -62,7 +62,7 @@ Since mvin was originally built as the core interpreter for condif2css (to be re
 
 mvin can be used to apply spreadsheet-style validation to incoming data.
 
-### 🛠 3. Lightweight Formula Evaluation in Applications --> Implement simple Excel formula support in a web app or database.
+### 3. Lightweight Formula Evaluation in Applications --> Implement simple Excel formula support in a web app or database.
 
 If you need Excel-like formula evaluation but don’t want to depend on a full workbook engine like formulas or xlcalculator, mvin offers a minimalist alternative.
 
@@ -70,41 +70,82 @@ If you need Excel-like formula evaluation but don’t want to depend on a full w
 
 ## 📖 Supported Operators & Functions
 
-### ✅ Operators
+### Operators
 
 The mvin interpreter supports a comprehensive set of numeric and comparison operators:
 
 #### Arithmetic Operators
 
-
-| Operator	| Description |
-|--|--|
-| + |	Addition |
-| - |	Subtraction |
-| * |	Multiplication |
-| / |	Division |
-| ^ |	Exponentiation |
+<table>
+	<thead>
+		<th>Operator</td>
+		<th>Description</td>
+	</thead>
+	<tbody>
+		<tr>
+			<td>+</td>
+			<td>Addition</td>
+		</tr>
+		<tr>
+			<td>-</td>
+			<td>Substraction</td>
+		</tr>
+		<tr><td>*</td><td>Multiplication</td></tr>
+		<tr><td>/</td><td>Division</td></tr>
+		<tr><td>^</td><td>Exponentiation</td></tr>
+	</tbody>
+</table>
 
 #### Logical Operators
 
-| Operator | Description |
-| :------: | :---------: |
-= | Equal to
-!= | Not equal to
-<> | Not equal to (alternative notation)
-> | Greater than
->= | Greater than or equal to
-< | Less than
-<= | Less than or equal to
+<table>
+	<thead>
+		<tr>
+			<th>Operator</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr><td>=</td><td>Equal to</td></tr>
+		<tr><td>!=</td><td>Not equal to</td></tr>
+		<tr><td>&lt;&gt;</td><td>Not equal to (alternative notation)</td></tr>
+		<tr><td>&gt;</td><td>Greater than</td></tr>
+		<tr><td>&gt;=</td><td>Greater than or equal to
+		<tr>
+			<td>&lt;</td><td>Less than</td>
+		</tr>
+		<tr>
+			<td>&lt;=</td><td>Less than or equal to</td>
+		</tr>
+	</tbody>
+</table>
 
 ### 📌 Built-in Functions
 
 Unlike full-fledged Excel formula interpreters, mvin includes only a minimal set of built-in functions, as it was originally designed for conditional formatting evaluation:
 
-Function	Description
-NOT(value)	Returns the logical negation of a boolean value.
-ISERROR(value)	Returns TRUE if the given value represents an error.
-SEARCH(substring, text, [start])	Finds the position of substring within text, optionally starting from start index.
+<table>
+	<thead>
+		<tr>
+			<th>Function</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>NOT(value)</td>
+			<td>Returns the logical negation of a boolean value.</td>
+		</tr>
+		<tr>
+			<td>ISERROR(value)</td>
+			<td>Returns TRUE if the given value represents an error.</td>
+		</tr>
+		<tr>
+			<td>SEARCH(substring, text, [start])</td>
+			<td>Finds the position of substring within text, optionally starting from start index.</td>
+		</tr>
+	</tbody>
+</table>
 
 For more advanced use cases, users can extend the function library by passing a custom dictionary of functions to the interpreter.
 
@@ -113,40 +154,46 @@ For more advanced use cases, users can extend the function library by passing a 
 ## ⚠️ Limitations & Roadmap
 
 ### Current Limitations
-	•	Limited Built-in Functions – Only NOT, ISERROR, and SEARCH are available. Users must define additional functions as needed.
-	•	No Direct Workbook Integration – Unlike formulas, mvin does not evaluate references across sheets or workbooks.
-	•	No Built-in Tokenizer – Requires an external tokenizer (e.g., openpyxl) to process formulas.
+
+*	Limited Built-in Functions – Only NOT, ISERROR, and SEARCH are available. Users must define additional functions as needed.
+*	No Direct Workbook Integration – Unlike formulas, mvin does not evaluate references across sheets or workbooks.
+*	No Built-in Tokenizer – Requires an external tokenizer (e.g., openpyxl) to process formulas.
 
 ### Planned Enhancements
 
-✔️ Improved Function Library – More Excel-like functions such as IF, AND, and OR may be added in future versions.
-✔️ Thread-Safety Validation – While designed for thread safety, formal testing is needed.
+* Improved Function Library – More Excel-like functions such as IF, AND, and OR may be added in future versions.
+* Thread-Safety Validation – While designed for thread safety, formal testing is needed.
 
 ---
 
 ## 🛠️ Testing & Code Coverage
-	•	mvin includes a comprehensive test suite with 93% test coverage.
-	•	To run the tests, use:
+
+mvin includes a comprehensive test suite with 93% test coverage.
+
+To run the tests, use:
 
 ```sh
 pytest tests/
-'''
+```
 
-	•	If you contribute to mvin, please ensure your changes do not reduce coverage.
+If you contribute to mvin, please ensure your changes do not reduce coverage.
 
 ---
 
 ## ⚖️ Comparison with Other Excel Interpreters
 
-| Feature | mvin | formulas | xlcalculator |
---: | -- | -- | --
-License | MIT / Apache 2.0 | GPL-3.0 | MIT
-Dependencies | None | Pandas, NumPy | NumPy, OpenPyXL
-Function Support | Minimal (NOT, ISERROR, SEARCH) | Extensive | Extensive
-Operators | Arithmetic & Comparisons | Arithmetic & Logical | Arithmetic & Logical
-Thread Safe | Potentially (Not Tested) | ❌ | ✅
-Tokenizer Required? | Yes (e.g., OpenPyXL) | No | No
-Designed for | Conditional Formatting | Full Workbook | Full Workbook
+<table>
+<thead><tr><th>Feature</th><th>mvin</th><th>formulas</th><th>xlcalculator</th></tr></thead>
+<tbody>
+<tr><td>License</td><td>MIT / Apache 2.0</td><td>GPL-3.0</td><td>MIT</td></tr>
+<tr><td>Dependencies</td><td>None</td><td>Pandas, NumPy</td><td>NumPy, OpenPyXL</td></tr>
+<tr><td>Function Support</td><td>Minimal (NOT, ISERROR, SEARCH)</td><td>Extensive</td><td>Extensive</td></tr>
+<tr><td>Operators</td><td>Arithmetic & Comparisons</td><td>Arithmetic & Logical</td><td>Arithmetic & Logical</td></tr>
+<tr><td>Thread Safe</td><td>Potentially (Not Tested)</td><td>❌</td><td>✅</td></tr>
+<tr><td>Tokenizer Required?</td><td>Yes (e.g., OpenPyXL)</td><td>No</td><td>No</td></tr>
+<tr><td>Designed for</td><td>Conditional Formatting</td><td>Full Workbook</td><td>Full Workbook</td></tr>
+</tbody>
+</table>
 
 mvin is ideal for lightweight, extendable formula evaluation, particularly in scenarios like conditional formatting where a full Excel engine is unnecessary.
 
@@ -157,16 +204,16 @@ mvin is ideal for lightweight, extendable formula evaluation, particularly in sc
 Version 0.5.0b2 (Initial Release)
 
 🚀 First public release of mvin with the following features:
-	•	✅ Supports numeric and comparison operators: +, -, *, /, ^, =, !=, <>, >, >=, <, <=.
-	•	✅ Minimal built-in function set: NOT, ISERROR, SEARCH.
-	•	✅ Extendable architecture: Custom operators and functions.
-	•	✅ Tokenizer-agnostic design: Requires an external tokenizer.
-	•	✅ No dependencies: Pure Python implementation.
-	•	✅ Designed for conditional formatting: Built for condif2css.
+* Supports numeric and comparison operators: +, -, *, /, ^, =, !=, <>, >, >=, <, <=.
+* Minimal built-in function set: NOT, ISERROR, SEARCH.
+* Extendable architecture: Custom operators and functions.
+* Tokenizer-agnostic design: Requires an external tokenizer.
+* No dependencies: Pure Python implementation.
+* Designed for conditional formatting: Built for condif2css.
 
 Future releases will focus on:
-✔ Adding more built-in functions (IF, AND, OR, etc.).
-✔ Thread-safety validation.
+- Adding more built-in functions (IF, AND, OR, etc.).
+- Thread-safety validation.
 
 ---
 
