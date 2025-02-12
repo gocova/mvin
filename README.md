@@ -204,14 +204,16 @@ mvin is ideal for lightweight, extendable formula evaluation, particularly in sc
 Version 0.5.0b2 (Initial Release)
 
 🚀 First public release of mvin with the following features:
-* Supports numeric and comparison operators: +, -, *, /, ^, =, !=, <>, >, >=, <, <=.
-* Minimal built-in function set: NOT, ISERROR, SEARCH.
-* Extendable architecture: Custom operators and functions.
-* Tokenizer-agnostic design: Requires an external tokenizer.
-* No dependencies: Pure Python implementation.
-* Designed for conditional formatting: Built for condif2css.
+
+- Supports numeric and comparison operators: +, -, *, /, ^, =, !=, <>, >, >=, <, <=.
+- Minimal built-in function set: NOT, ISERROR, SEARCH.
+- Extendable architecture: Custom operators and functions.
+- Tokenizer-agnostic design: Requires an external tokenizer.
+- No dependencies: Pure Python implementation.
+- Designed for conditional formatting: Built for condif2css.
 
 Future releases will focus on:
+
 - Adding more built-in functions (IF, AND, OR, etc.).
 - Thread-safety validation.
 
