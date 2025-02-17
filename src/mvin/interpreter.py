@@ -190,15 +190,15 @@ def get_interpreter(
                                 )
 
                             # copy defaults to stack if not None
-                            print(
-                                f" --> arg_count:{arg_count} required_args_count:{required_args_count}"
-                            )
+                            # print(
+                            #     f" --> arg_count:{arg_count} required_args_count:{required_args_count}"
+                            # )
                             arg_index = arg_count
                             while arg_index < required_args_count:
                                 default_arg = required_args[arg_index]
-                                print(
-                                    f"   --> arg_index:{arg_index} default_arg: {default_arg}"
-                                )
+                                # print(
+                                #     f"   --> arg_index:{arg_index} default_arg: {default_arg}"
+                                # )
                                 if default_arg is not None:
                                     output.append(default_arg)
                                 else:
@@ -262,7 +262,7 @@ def get_interpreter(
             return output, inputs
 
         rpn_tokens, inputs = infix_to_rpn(tokens, functions)
-        print(f"rpn_tokens: {rpn_tokens}")
+        # print(f"rpn_tokens: {rpn_tokens}")
 
         def execute_func(
             rpn_tokens: Sequence[Union[Token, int, None]], inputs_set: Set[str]
@@ -277,7 +277,7 @@ def get_interpreter(
                 while i < len(rpn_tokens):
                     token = rpn_tokens[i]
                     i += 1  # Move to the next token
-                    print(token)
+                    # print(token)
 
                     if token is None:
                         # raise ValueError(f"Unexpected None at position {i}")
@@ -340,7 +340,7 @@ def get_interpreter(
                             args = [
                                 stack.pop() if stack else None for _ in range(arg_count)
                             ][::-1]
-                            print(f"`{func_name}`-> args: {args}")
+                            # print(f"`{func_name}`-> args: {args}")
 
                             # Get function default values
                             func_defaults, func_callable = functions[func_name]
@@ -354,9 +354,9 @@ def get_interpreter(
                                 arg_index = 0
                                 while arg_index < required_args_count:
                                     default_value = func_defaults[arg_index]
-                                    print(
-                                        f" *-> Eval#{func_name} :: {arg_index} | {args[arg_index]} | {default_value}"
-                                    )
+                                    # print(
+                                    #     f" *-> Eval#{func_name} :: {arg_index} | {args[arg_index]} | {default_value}"
+                                    # )
                                     if (
                                         default_value is None
                                         and args[arg_index] is None
@@ -367,7 +367,7 @@ def get_interpreter(
                                     arg_index += 1
 
                             func_result = func_callable(*args)
-                            print(f"`{func_name}`-> result: {func_result}")
+                            # print(f"`{func_name}`-> result: {func_result}")
                             if func_result:
                                 stack.append(func_result)
                         else:
