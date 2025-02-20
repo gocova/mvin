@@ -305,6 +305,10 @@ def get_interpreter(
                         b = stack.pop()
                         a = stack.pop()
 
+                        logging.debug(
+                            f"interpreter: applying op: {token.value} with a: {a.value} b: {b.value}"
+                        )
+
                         if (
                             token.value == "/"
                             and b.type == "OPERAND"
