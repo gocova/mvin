@@ -34,8 +34,6 @@ def excel_search(
             TokenErrorTypes.VALUE,
             f"Expected value for within_text argument, but found: {within_text}",
         )
-    if within_text.subtype == "ERROR":
-        return within_text
 
     within_text_value = ""
     if within_text:
@@ -79,12 +77,12 @@ def excel_search(
             if start_num_value < 0:
                 return TokenError(
                     TokenErrorTypes.VALUE,
-                    f"Expected integer >= 1 for start_num argument, but found: {start_num.value}",
+                    f"Expected integer >=1 for start_num argument, but found: {start_num.value}",
                 )
         else:
             return TokenError(
                 TokenErrorTypes.VALUE,
-                f"Expected integer valur for start_num argument, but found: {start_num}",
+                f"Expected integer value for start_num argument, but found: {start_num}",
             )
 
     found_index = within_text_value.find(find_text_value, start_num_value)
@@ -95,6 +93,63 @@ def excel_search(
             TokenErrorTypes.VALUE,
             f"Text `{find_text_value}` not found in text `{within_text_value} (starting at: {start_num_value + 1})`",
         )
+
+
+def excel_left(text: Union[Token, None], num_chars: Union[Token, None]) -> Token:
+    logging.debug(
+        f"excel_lib.excel_left: calling with (text= {text}, num_chars= {num_chars} )"
+    )
+    if not text:
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            "Expected value for text argument, but Empty was found",
+        )
+    if text.type != "OPERAND":
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            f"Expected value for text argument, but found: {text}",
+        )
+
+    if num_chars and num_chars.type != "OPERAND":
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            f"Expected positive integer for num_chars argument, but found: {num_chars}",
+        )
+
+    text_value = ""
+    if text.subtype == "ERROR":
+        return text
+    elif text.subtype == "TEXT":
+        text_value = text.value
+    elif text.subtype == "NUMBER":
+        text_value = str(text.value)
+    elif text.subtype == "LOGICAL":
+        text_value = "TRUE" if text.value else "FALSE"
+    else:
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            f"Unsupported value type for text argument: {text}",
+        )
+
+    num_chars_value = 1
+    if num_chars:
+        if num_chars.subtype == "ERROR":
+            return num_chars
+        elif num_chars.subtype == "NUMBER":
+            num_chars_value = num_chars.value
+
+            if num_chars_value < 0:
+                return TokenError(
+                    TokenErrorTypes.VALUE,
+                    f"Expected positive integer for num_chars argument, but found: {num_chars.value}",
+                )
+        else:
+            return TokenError(
+                TokenErrorTypes.VALUE,
+                f"Expected positive integer for num_chars argument, but found: {num_chars}",
+            )
+
+    return TokenString(text_value[0:num_chars_value])
 
 
 DEFAULT_FUNCTIONS: Dict[str, Tuple[Union[List, None], Callable]] = {
@@ -114,8 +169,15 @@ DEFAULT_FUNCTIONS: Dict[str, Tuple[Union[List, None], Callable]] = {
         [
             TokenString(""),  # find_text
             None,  # within_text
-            TokenNumber(1),  # start_num --> default: 1
+            TokenNumber(1),  # start_num <- default: 1
         ],  # default argument list (if None is in the list, that argument is not optional)
         excel_search,
+    ),
+    "LEFT(": (
+        [
+            None,  # text <- required
+            TokenNumber(1),  # num_chars <- Optional, default: 1
+        ],  # default argument list (if None is in the list, that argument is not optional)
+        excel_left,
     ),
 }
