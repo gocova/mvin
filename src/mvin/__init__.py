@@ -26,7 +26,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import Dict, Callable, Any, Tuple, Union
 
-__version__ = "0.8.0b1"
+__version__ = "0.9.0b1"
 
 
 class Token(metaclass=ABCMeta):

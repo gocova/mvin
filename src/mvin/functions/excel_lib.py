@@ -152,6 +152,37 @@ def excel_left(text: Union[Token, None], num_chars: Union[Token, None]) -> Token
     return TokenString(text_value[0:num_chars_value])
 
 
+def excel_len(text: Union[Token, None]) -> Token:
+    logging.debug(f"excel_lib.excel_len: calling with (text= {text} )")
+    if not text:
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            "Expected value for text argument, but Empty was found",
+        )
+    if text.type != "OPERAND":
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            f"Expected value for text argument, but found: {text}",
+        )
+
+    text_value = ""
+    if text.subtype == "ERROR":
+        return text
+    elif text.subtype == "TEXT":
+        text_value = text.value
+    elif text.subtype == "NUMBER":
+        text_value = str(text.value)
+    elif text.subtype == "LOGICAL":
+        text_value = "TRUE" if text.value else "FALSE"
+    else:
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            f"Unsupported value type for text argument: {text}",
+        )
+
+    return TokenNumber(len(text_value))
+
+
 DEFAULT_FUNCTIONS: Dict[str, Tuple[Union[List, None], Callable]] = {
     "NOT(": (
         [
@@ -179,5 +210,11 @@ DEFAULT_FUNCTIONS: Dict[str, Tuple[Union[List, None], Callable]] = {
             TokenNumber(1),  # num_chars <- Optional, default: 1
         ],  # default argument list (if None is in the list, that argument is not optional)
         excel_left,
+    ),
+    "LEN(": (
+        [
+            None,  # text <- required
+        ],  # default argument list (if None is in the list, that argument is not optional)
+        excel_len,
     ),
 }
