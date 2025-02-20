@@ -26,7 +26,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import Dict, Callable, Any, Tuple, Union
 
-__version__ = "0.5.0b4"
+__version__ = "0.6.0b1"
 
 
 class Token(metaclass=ABCMeta):
@@ -154,6 +154,18 @@ class TokenParen(BaseToken):
         self._value = "(" if subtype == "OPEN" else ")"
         self._type = "OPERATOR-INFIX"
         self._subtype = "OPEN" if subtype == "OPEN" else "CLOSE"
+
+
+class TokenEmpty(BaseToken):
+    """
+    Token class for empty value.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._value = None
+        self._type = "OPERAND"
+        self._subtype = "EMPTY"
 
 
 TokenErrorTypes = Enum(
