@@ -1,5 +1,5 @@
 version = 1
-requires-python = ">=3.9"
+requires-python = ">=3.9, <4.0"
 
 [[package]]
 name = "colorama"
@@ -228,7 +228,7 @@ wheels = [
 
 [[package]]
 name = "mvin"
-version = "0.1.0"
+version = "0.5.0b4"
 source = { virtual = "." }
 
 [package.dev-dependencies]
