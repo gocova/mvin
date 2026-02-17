@@ -77,7 +77,7 @@ def excel_search(
             if start_num_value < 0:
                 return TokenError(
                     TokenErrorTypes.VALUE,
-                    f"Expected integer >=1 for start_num argument, but found: {start_num.value}",
+                    f"Expected integer >= 1 for start_num argument, but found: {start_num.value}",
                 )
         else:
             return TokenError(
