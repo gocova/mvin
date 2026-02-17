@@ -38,8 +38,13 @@ def get_interpreter(
     registered_ops: Dict[str, Callable[[Token, Token], Token]] = REGISTERED_OPS,
 ) -> Union[Callable[[Dict[str, Any]], Any], None]:
     if isinstance(tokens, Sequence):
-        ops = MappingProxyType(registered_ops)
-        functions = MappingProxyType(proposed_functions)
+        ops = MappingProxyType(dict(registered_ops))
+
+        copied_functions: Dict[str, Tuple[Union[List, None], Callable]] = {}
+        for func_name, (defaults, func_callable) in dict(proposed_functions).items():
+            copied_defaults = list(defaults) if defaults is not None else None
+            copied_functions[func_name] = (copied_defaults, func_callable)
+        functions = MappingProxyType(copied_functions)
 
         def infix_to_rpn(
             tokens: Sequence[Token],  # tokens from the tokenizer
@@ -72,10 +77,10 @@ def get_interpreter(
 
             inputs: Set[str] = set()
 
-            for i, token in enumerate(
-                # Filter whitespace to simply logic
-                [x for x in tokens if x is None or x.type != "WHITE-SPACE"]
-            ):
+            filtered_tokens = [x for x in tokens if x is None or x.type != "WHITE-SPACE"]
+
+            for i, token in enumerate(filtered_tokens):
+                prev_token = filtered_tokens[i - 1] if i > 0 else None
                 logging.debug(
                     f"--------\noutput: {output}\nop_stack: {op_stack}\narg_count: {arg_stack}\ntoken: {token}"
                 )
@@ -102,36 +107,8 @@ def get_interpreter(
                     op_stack.append(TokenFunc("("))
                     open_parens += 1
 
-                elif token.type == "OPERATOR-INFIX":
-                    if i == 0 or (
-                        tokens[i - 1].type == "OPERATOR-INFIX"
-                        or tokens[i - 1].value == "("
-                    ):
-                        raise SyntaxError(
-                            f"Unexpected operator `{token}` at position {i}."
-                        )
-                    token_value = token.value
-                    while (
-                        op_stack
-                        and op_stack[-1].value in OPERATORS
-                        and (
-                            (
-                                OPERATORS[token_value][1] == "L"
-                                and OPERATORS[token_value][0]
-                                <= OPERATORS[op_stack[-1].value][0]
-                            )
-                            or (
-                                OPERATORS[token_value][1] == "R"
-                                and OPERATORS[token_value][0]
-                                < OPERATORS[op_stack[-1].value][0]
-                            )
-                        )
-                    ):
-                        output.append(op_stack.pop())  # TODO Improve test coverage
-                    op_stack.append(token)
-
                 elif token.value == "(":  # Left parenthesis
-                    if i > 0 and tokens[i - 1].type == "OPERAND":
+                    if prev_token and prev_token.type == "OPERAND":
                         raise SyntaxError(
                             f"Missing operator before '(' at position {i}."
                         )
@@ -146,7 +123,7 @@ def get_interpreter(
                         )
 
                     # Ensure trailing empty argument handling
-                    last_token = tokens[i - 1] if i > 0 else None
+                    last_token = prev_token
                     logging.debug(f"last_token: {last_token}")
                     if last_token:
                         if last_token.type == "FUNC" and last_token.subtype == "OPEN":
@@ -170,8 +147,6 @@ def get_interpreter(
                             logging.warning(
                                 f"Expected token of type:`FUNC` and subtype:`CLOSE`, but found token of type:`{token.type}`"
                             )
-                        # if op_stack and token.type == "FUNC" and token.subtype == "CLOSE":
-                        # func_name = op_stack.pop()
                         func = op_stack.pop()
                         func_name = func.value
                         arg_count = arg_stack.pop()  # Use dynamic argument count
@@ -231,10 +206,50 @@ def get_interpreter(
                         output.append(func)
                         output.append(arg_count)
 
+                elif token.type == "OPERATOR-INFIX":
+                    if i == 0 or (
+                        prev_token
+                        and (
+                            (
+                                prev_token.type == "OPERATOR-INFIX"
+                                and prev_token.value != ")"
+                                and prev_token.subtype != "CLOSE"
+                            )
+                            or prev_token.value == "("
+                        )
+                    ):
+                        raise SyntaxError(
+                            f"Unexpected operator `{token}` at position {i}."
+                        )
+                    token_value = token.value
+                    while (
+                        op_stack
+                        and op_stack[-1].value in OPERATORS
+                        and (
+                            (
+                                OPERATORS[token_value][1] == "L"
+                                and OPERATORS[token_value][0]
+                                <= OPERATORS[op_stack[-1].value][0]
+                            )
+                            or (
+                                OPERATORS[token_value][1] == "R"
+                                and OPERATORS[token_value][0]
+                                < OPERATORS[op_stack[-1].value][0]
+                            )
+                        )
+                    ):
+                        output.append(op_stack.pop())  # TODO Improve test coverage
+                    op_stack.append(token)
+
                 elif (
                     token.type == "SEP" and token.subtype == "ARG"
                 ):  # token.value == ',':
-                    if tokens[i - 1].subtype == "OPEN" or tokens[i - 1].value == ",":
+                    if prev_token is None:
+                        raise SyntaxError(
+                            f"Unexpected separator `{token}` at position {i}."
+                        )
+
+                    if prev_token.subtype == "OPEN" or prev_token.value == ",":
                         output.append(None)  # Handle missing argument
 
                     while op_stack and op_stack[-1].value != "(":
@@ -267,8 +282,11 @@ def get_interpreter(
         def execute_func(
             rpn_tokens: Sequence[Union[Token, int, None]], inputs_set: Set[str]
         ) -> Callable[[Dict[str, typing.Any]], Any]:
-            def evaluate_rpn(inputs: Dict[str, typing.Any] = {}) -> typing.Any:
-                immutable_inputs: Mapping[str, Any] = MappingProxyType(inputs)
+            def evaluate_rpn(
+                inputs: Union[Dict[str, typing.Any], None] = None,
+            ) -> typing.Any:
+                provided_inputs = {} if inputs is None else dict(inputs)
+                immutable_inputs: Mapping[str, Any] = MappingProxyType(provided_inputs)
 
                 stack = deque()
 
@@ -290,9 +308,8 @@ def get_interpreter(
                         if token.subtype != "RANGE":
                             stack.append(token)
                         else:
-                            range_value = immutable_inputs.get(token.value)
-                            if range_value:
-                                stack.append(range_value)
+                            if token.value in immutable_inputs:
+                                stack.append(immutable_inputs[token.value])
                             else:
                                 raise KeyError(
                                     f"The input '{token.value}' is required but was not found in the provided inputs."

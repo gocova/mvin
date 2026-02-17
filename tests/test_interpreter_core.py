@@ -4,7 +4,7 @@ sys.path.append("src")
 
 import pytest  # required for pytest.raises
 
-from mvin import BaseToken, Token, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenString
+from mvin import BaseToken, Token, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenOperator, TokenString
 from mvin.interpreter import get_interpreter
 
 
@@ -14,6 +14,17 @@ class ManualToken(BaseToken):
         self._value = value
         self._type = token_type
         self._subtype = subtype
+
+
+class FalseyToken(BaseToken):
+    def __init__(self, value, subtype) -> None:
+        super().__init__()
+        self._value = value
+        self._type = "OPERAND"
+        self._subtype = subtype
+
+    def __bool__(self):
+        return False
 
 
 def test_abstractToken():
@@ -79,6 +90,52 @@ def test_range_proper_value_transfer():
     assert run is not None
     result = run({"F7": TokenString("done")})
     assert result == "done"
+
+
+def test_range_falsey_input_token_is_accepted():
+    tokens = [ManualToken("F7", "OPERAND", "RANGE")]
+    run = get_interpreter(tokens)
+    assert run is not None
+    result = run({"F7": FalseyToken(0, "NUMBER")})
+    assert result == 0
+
+
+def test_registered_ops_are_copied_defensively():
+    def add_v1(a, b):
+        return TokenNumber(10)
+
+    def add_v2(a, b):
+        return TokenNumber(99)
+
+    custom_ops = {"+": add_v1}
+    run = get_interpreter(
+        [TokenNumber(1), TokenOperator("+"), TokenNumber(2)],
+        registered_ops=custom_ops,
+    )
+    assert run is not None
+
+    custom_ops["+"] = add_v2
+    assert run({}) == 10
+
+
+def test_function_map_is_copied_defensively():
+    def f_v1(value):
+        return TokenNumber(value.value + 1)
+
+    def f_v2(value):
+        return TokenNumber(value.value + 100)
+
+    custom_functions = {"INC(": ([None], f_v1)}
+    tokens = [
+        ManualToken("INC(", "FUNC", "OPEN"),
+        TokenNumber(1),
+        ManualToken(")", "FUNC", "CLOSE"),
+    ]
+    run = get_interpreter(tokens, proposed_functions=custom_functions)
+    assert run is not None
+
+    custom_functions["INC("] = ([None], f_v2)
+    assert run({}) == 2
 
 
 def test_none_as_token():

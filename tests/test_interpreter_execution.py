@@ -4,7 +4,7 @@ sys.path.append("src")
 
 import pytest  # required for pytest.raises
 
-from mvin import BaseToken, TokenBool, TokenNumber
+from mvin import BaseToken, TokenBool, TokenNumber, TokenParen, TokenString
 from mvin.interpreter import get_interpreter
 
 
@@ -46,6 +46,41 @@ def test_multiple_operations():
     f = get_interpreter(tokens)
     assert f is not None
     assert f({}) == 36
+
+
+def test_multiple_operations_with_token_paren():
+    tokens = [
+        TokenParen("OPEN"),
+        TokenNumber(2),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(0),
+        TokenParen("CLOSE"),
+        ManualToken("*", "OPERATOR-INFIX", ""),
+        TokenParen("OPEN"),
+        TokenNumber(10),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        TokenNumber(2),
+        ManualToken("^", "OPERATOR-INFIX", ""),
+        TokenNumber(3),
+        TokenParen("CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == 36
+
+
+def test_search_with_leading_whitespace_keeps_separator_indexing():
+    tokens = [
+        ManualToken("", "WHITE-SPACE", ""),
+        ManualToken("SEARCH(", "FUNC", "OPEN"),
+        TokenString("a"),
+        ManualToken(",", "SEP", "ARG"),
+        TokenString("abc"),
+        ManualToken(")", "FUNC", "CLOSE"),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == 1
 
 
 def test_complex_search_call_with_warning():

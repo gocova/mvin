@@ -14,6 +14,16 @@ def test_excel_search_found():
     assert isinstance(result, TokenNumber)
     assert result.value == 7
 
+
+def test_excel_search_case_insensitive():
+    find_text = TokenString("WoRLD")
+    within_text = TokenString("hello world")
+    start_num = TokenNumber(1)
+    result = excel_search(find_text, within_text, start_num)
+    assert isinstance(result, TokenNumber)
+    assert result.value == 7
+
+
 def test_excel_search_not_found():
     find_text = TokenString("world")
     within_text = TokenString("hello")

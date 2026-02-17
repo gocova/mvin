@@ -85,7 +85,8 @@ def excel_search(
                 f"Expected integer value for start_num argument, but found: {start_num}",
             )
 
-    found_index = within_text_value.find(find_text_value, start_num_value)
+    # Excel SEARCH is case-insensitive.
+    found_index = within_text_value.lower().find(find_text_value.lower(), start_num_value)
     if found_index >= 0:
         return TokenNumber(found_index + 1)
     else:
