@@ -14,6 +14,18 @@ class ManualToken(BaseToken):
         self._type = type
         self._subtype = subtype
 
+
+class FalseyToken(BaseToken):
+    def __init__(self, value, subtype) -> None:
+        super().__init__()
+        self._value = value
+        self._type = "OPERAND"
+        self._subtype = subtype
+
+    def __bool__(self):
+        return False
+
+
 def test_excel_not_numeric_arg():
     tokens = [
         ManualToken("NOT(", "FUNC", "OPEN"),
@@ -61,3 +73,8 @@ def test_excel_iserror_true():
     f = get_interpreter(tokens)
     assert f is not None
     assert f({})
+
+
+def test_excel_not_accepts_falsey_numeric_token():
+    result = excel_not(FalseyToken(0, "NUMBER"))
+    assert result.value

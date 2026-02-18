@@ -44,6 +44,10 @@ def test_left_invalid_input_paths():
         excel_left(TokenString("hello"), TokenNumber(-1)).value
         == TokenErrorTypes.VALUE.value
     )
+    assert (
+        excel_left(TokenString("hello"), TokenNumber(1.5)).value
+        == TokenErrorTypes.VALUE.value
+    )
 
 
 def test_left_error_passthroughs():
@@ -89,6 +93,16 @@ def test_right_invalid_input_paths():
         excel_right(TokenString("hello"), TokenNumber(-1)).value
         == TokenErrorTypes.VALUE.value
     )
+    assert (
+        excel_right(TokenString("hello"), TokenNumber(1.5)).value
+        == TokenErrorTypes.VALUE.value
+    )
+
+
+def test_right_zero_num_chars_returns_empty_string():
+    result = excel_right(TokenString("hello"), TokenNumber(0))
+    assert isinstance(result, TokenString)
+    assert result.value == ""
 
 
 def test_right_error_passthroughs():

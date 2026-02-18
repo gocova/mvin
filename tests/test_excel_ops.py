@@ -15,6 +15,17 @@ class ManualToken(BaseToken):
         self._subtype = subtype
 
 
+class FalseyToken(BaseToken):
+    def __init__(self, value, subtype) -> None:
+        super().__init__()
+        self._value = value
+        self._type = "OPERAND"
+        self._subtype = subtype
+
+    def __bool__(self):
+        return False
+
+
 def test_concat_ret_error():
     num_token = TokenNumber(2)
     assert e_ops.excel_op_concat(None, num_token).value == "#REF!"
@@ -65,3 +76,15 @@ def test_numeric_op_wrapper_num_and_string():
     num_token = TokenNumber(2)
     text_token = TokenString("hi")
     assert add_op(num_token, text_token).value == "#NUM!"
+
+
+def test_concat_accepts_falsey_custom_tokens():
+    left = FalseyToken(0, "NUMBER")
+    right = FalseyToken(1, "NUMBER")
+    assert e_ops.excel_op_concat(left, right).value == "01"
+
+
+def test_eq_accepts_falsey_custom_tokens():
+    left = FalseyToken(0, "NUMBER")
+    right = FalseyToken(0, "NUMBER")
+    assert e_ops.excel_op_eq(left, right).value

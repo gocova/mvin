@@ -6,7 +6,14 @@ from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Uni
 
 import mvin.excel_ops as _  # noqa
 
-from mvin import REGISTERED_OPS, Token, TokenError, TokenErrorTypes, TokenFunc
+from mvin import (
+    REGISTERED_OPS,
+    Token,
+    TokenError,
+    TokenErrorTypes,
+    TokenFunc,
+    TokenNumber,
+)
 from mvin.functions.excel_lib import DEFAULT_FUNCTIONS
 
 # Operator precedence and associativity
@@ -28,6 +35,28 @@ OPERATORS: Mapping[str, Tuple[Union[int, float], str]] = MappingProxyType(
         "^": (3, "R"),  # Exponentiation is right-associative
     }
 )
+
+UNARY_OPERATORS: Mapping[str, Tuple[Union[int, float], str]] = MappingProxyType(
+    {
+        # Keep unary precedence below exponentiation so -2^2 parses as -(2^2)
+        "u+": (2.5, "R"),
+        "u-": (2.5, "R"),
+    }
+)
+
+
+def _operator_key(token: Token) -> str:
+    if token.type == "OPERATOR-PREFIX":
+        return f"u{token.value}"
+    return token.value
+
+
+def _operator_meta(operator_key: str) -> Tuple[Union[int, float], str]:
+    if operator_key in OPERATORS:
+        return OPERATORS[operator_key]
+    if operator_key in UNARY_OPERATORS:
+        return UNARY_OPERATORS[operator_key]
+    raise KeyError(f"Unknown operator key: {operator_key}")
 
 
 def get_interpreter(
@@ -206,6 +235,24 @@ def get_interpreter(
                         output.append(func)
                         output.append(arg_count)
 
+                elif token.type == "OPERATOR-PREFIX":
+                    if token.value not in ("+", "-"):
+                        raise SyntaxError(
+                            f"Unsupported unary operator `{token.value}` at position {i}."
+                        )
+                    if prev_token and (
+                        prev_token.type == "OPERAND"
+                        or prev_token.value == ")"
+                        or (
+                            prev_token.type == "FUNC"
+                            and prev_token.subtype == "CLOSE"
+                        )
+                    ):
+                        raise SyntaxError(
+                            f"Unexpected unary operator `{token}` at position {i}."
+                        )
+                    op_stack.append(token)
+
                 elif token.type == "OPERATOR-INFIX":
                     if i == 0 or (
                         prev_token
@@ -215,30 +262,36 @@ def get_interpreter(
                                 and prev_token.value != ")"
                                 and prev_token.subtype != "CLOSE"
                             )
+                            or prev_token.type == "OPERATOR-PREFIX"
                             or prev_token.value == "("
                         )
                     ):
                         raise SyntaxError(
                             f"Unexpected operator `{token}` at position {i}."
                         )
-                    token_value = token.value
-                    while (
-                        op_stack
-                        and op_stack[-1].value in OPERATORS
-                        and (
-                            (
-                                OPERATORS[token_value][1] == "L"
-                                and OPERATORS[token_value][0]
-                                <= OPERATORS[op_stack[-1].value][0]
+                    token_key = _operator_key(token)
+                    if token_key in OPERATORS or token_key in UNARY_OPERATORS:
+                        token_prec, token_assoc = _operator_meta(token_key)
+                        while (
+                            op_stack
+                            and (
+                                _operator_key(op_stack[-1]) in OPERATORS
+                                or _operator_key(op_stack[-1]) in UNARY_OPERATORS
                             )
-                            or (
-                                OPERATORS[token_value][1] == "R"
-                                and OPERATORS[token_value][0]
-                                < OPERATORS[op_stack[-1].value][0]
+                            and (
+                                (
+                                    token_assoc == "L"
+                                    and token_prec
+                                    <= _operator_meta(_operator_key(op_stack[-1]))[0]
+                                )
+                                or (
+                                    token_assoc == "R"
+                                    and token_prec
+                                    < _operator_meta(_operator_key(op_stack[-1]))[0]
+                                )
                             )
-                        )
-                    ):
-                        output.append(op_stack.pop())  # TODO Improve test coverage
+                        ):
+                            output.append(op_stack.pop())  # TODO Improve test coverage
                     op_stack.append(token)
 
                 elif (
@@ -255,10 +308,11 @@ def get_interpreter(
                     while op_stack and op_stack[-1].value != "(":
                         output.append(op_stack.pop())
 
-                    if arg_stack:
-                        arg_stack[-1] += (
-                            1  # Increase count for the current function call
+                    if not arg_stack:
+                        raise SyntaxError(
+                            f"Unexpected separator `{token}` at position {i}."
                         )
+                    arg_stack[-1] += 1  # Increase count for the current function call
 
                 # elif token.type == "WHITE-SPACE":
                 #     pass
@@ -344,6 +398,37 @@ def get_interpreter(
                                 raise NotImplementedError(
                                     f"Operator '{token.value}' is not implemented"
                                 )
+                    elif token.type == "OPERATOR-PREFIX":
+                        if len(stack) < 1:
+                            raise ValueError(
+                                f"Not enough values for unary operation '{token.value}'."
+                            )
+                        a = stack.pop()
+                        if a is None:
+                            stack.append(
+                                TokenError(
+                                    TokenErrorTypes.NUM,
+                                    f"Unary operator '{token.value}' cannot be applied to None.",
+                                )
+                            )
+                        elif a.subtype == "ERROR":
+                            stack.append(a)
+                        elif a.type == "OPERAND" and a.subtype == "NUMBER":
+                            if token.value == "-":
+                                stack.append(TokenNumber(-a.value))
+                            elif token.value == "+":
+                                stack.append(TokenNumber(+a.value))
+                            else:
+                                raise NotImplementedError(
+                                    f"Unary operator '{token.value}' is not implemented"
+                                )
+                        else:
+                            stack.append(
+                                TokenError(
+                                    TokenErrorTypes.NUM,
+                                    f"Unary operator '{token.value}' expects NUMBER but found {a}.",
+                                )
+                            )
                     elif token.type == "FUNC" and token.subtype == "OPEN":
                         func_name = token.value
 
@@ -389,7 +474,7 @@ def get_interpreter(
 
                             func_result = func_callable(*args)
                             # print(f"`{func_name}`-> result: {func_result}")
-                            if func_result:
+                            if func_result is not None:
                                 stack.append(func_result)
                         else:
                             raise RuntimeError(

@@ -173,3 +173,46 @@ def test_required_missing_args():
     with pytest.raises(ValueError) as exc_info:
         f({})
     assert str(exc_info.value) == "Missing required argument at 1 for function `SEARCH(`"
+
+
+def test_unary_minus_simple():
+    tokens = [ManualToken("-", "OPERATOR-PREFIX", ""), TokenNumber(2)]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == -2
+
+
+def test_unary_minus_after_infix():
+    tokens = [
+        TokenNumber(1),
+        ManualToken("+", "OPERATOR-INFIX", ""),
+        ManualToken("-", "OPERATOR-PREFIX", ""),
+        TokenNumber(2),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == -1
+
+
+def test_unary_minus_has_lower_precedence_than_exponent():
+    tokens = [
+        ManualToken("-", "OPERATOR-PREFIX", ""),
+        TokenNumber(2),
+        ManualToken("^", "OPERATOR-INFIX", ""),
+        TokenNumber(2),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == -4
+
+
+def test_unary_minus_can_be_exponent_operand():
+    tokens = [
+        TokenNumber(2),
+        ManualToken("^", "OPERATOR-INFIX", ""),
+        ManualToken("-", "OPERATOR-PREFIX", ""),
+        TokenNumber(2),
+    ]
+    f = get_interpreter(tokens)
+    assert f is not None
+    assert f({}) == 0.25

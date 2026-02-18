@@ -3,8 +3,18 @@ from typing import Callable, Dict, List, Tuple, Union
 from mvin import Token, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenString
 
 
+def _coerce_excel_int(value: Union[int, float]) -> Union[int, None]:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return None
+
+
 def excel_not(token: Token) -> Token:
-    if token and token.type == "OPERAND":
+    if token is not None and token.type == "OPERAND":
         if token.subtype == "LOGICAL":
             return TokenBool(not token.value)
         elif token.subtype == "NUMBER":
@@ -16,7 +26,7 @@ def excel_not(token: Token) -> Token:
 
 
 def excel_iserror(token: Token) -> Token:
-    return TokenBool(token and token.subtype == "ERROR")
+    return TokenBool(token is not None and token.subtype == "ERROR")
 
 
 def excel_search(
@@ -27,7 +37,7 @@ def excel_search(
     logging.debug(
         f"excel_lib.excel_search: calling with (find_text= {find_text}, within_text={within_text}, start_num= {start_num} )"
     )
-    if not within_text:
+    if within_text is None:
         return TokenError(TokenErrorTypes.VALUE, "Argument within_text cannot be None")
     if within_text.type != "OPERAND":
         return TokenError(
@@ -36,23 +46,22 @@ def excel_search(
         )
 
     within_text_value = ""
-    if within_text:
-        if within_text.subtype == "ERROR":
-            return within_text
-        elif within_text.subtype == "TEXT":
-            within_text_value = within_text.value
-        elif within_text.subtype == "NUMBER":
-            within_text_value = str(within_text.value)
-        elif within_text.subtype == "LOGICAL":
-            within_text_value = "TRUE" if within_text.value else "FALSE"
-        else:
-            return TokenError(
-                TokenErrorTypes.VALUE,
-                f"Unsupported value type for within_text argument: {within_text}",
-            )
+    if within_text.subtype == "ERROR":
+        return within_text
+    elif within_text.subtype == "TEXT":
+        within_text_value = within_text.value
+    elif within_text.subtype == "NUMBER":
+        within_text_value = str(within_text.value)
+    elif within_text.subtype == "LOGICAL":
+        within_text_value = "TRUE" if within_text.value else "FALSE"
+    else:
+        return TokenError(
+            TokenErrorTypes.VALUE,
+            f"Unsupported value type for within_text argument: {within_text}",
+        )
 
     find_text_value = ""
-    if find_text:
+    if find_text is not None:
         if find_text.subtype == "ERROR":
             return find_text
         elif find_text.subtype == "TEXT":
@@ -68,11 +77,17 @@ def excel_search(
             )
 
     start_num_value = 0
-    if start_num:
+    if start_num is not None:
         if start_num.subtype == "ERROR":
             return start_num
         elif start_num.subtype == "NUMBER":
-            start_num_value = start_num.value - 1
+            coerced_start_num = _coerce_excel_int(start_num.value)
+            if coerced_start_num is None:
+                return TokenError(
+                    TokenErrorTypes.VALUE,
+                    f"Expected integer >= 1 for start_num argument, but found: {start_num.value}",
+                )
+            start_num_value = coerced_start_num - 1
 
             if start_num_value < 0:
                 return TokenError(
@@ -100,7 +115,7 @@ def excel_left(text: Union[Token, None], num_chars: Union[Token, None]) -> Token
     logging.debug(
         f"excel_lib.excel_left: calling with (text= {text}, num_chars= {num_chars} )"
     )
-    if not text:
+    if text is None:
         return TokenError(
             TokenErrorTypes.VALUE,
             "Expected value for text argument, but Empty was found",
@@ -111,7 +126,7 @@ def excel_left(text: Union[Token, None], num_chars: Union[Token, None]) -> Token
             f"Expected value for text argument, but found: {text}",
         )
 
-    if num_chars and num_chars.type != "OPERAND":
+    if num_chars is not None and num_chars.type != "OPERAND":
         return TokenError(
             TokenErrorTypes.VALUE,
             f"Expected positive integer for num_chars argument, but found: {num_chars}",
@@ -133,11 +148,17 @@ def excel_left(text: Union[Token, None], num_chars: Union[Token, None]) -> Token
         )
 
     num_chars_value = 1
-    if num_chars:
+    if num_chars is not None:
         if num_chars.subtype == "ERROR":
             return num_chars
         elif num_chars.subtype == "NUMBER":
-            num_chars_value = num_chars.value
+            coerced_num_chars = _coerce_excel_int(num_chars.value)
+            if coerced_num_chars is None:
+                return TokenError(
+                    TokenErrorTypes.VALUE,
+                    f"Expected positive integer for num_chars argument, but found: {num_chars.value}",
+                )
+            num_chars_value = coerced_num_chars
 
             if num_chars_value < 0:
                 return TokenError(
@@ -157,7 +178,7 @@ def excel_right(text: Union[Token, None], num_chars: Union[Token, None]) -> Toke
     logging.debug(
         f"excel_lib.excel_right: calling with (text= {text}, num_chars= {num_chars} )"
     )
-    if not text:
+    if text is None:
         return TokenError(
             TokenErrorTypes.VALUE,
             "Expected value for text argument, but Empty was found",
@@ -168,7 +189,7 @@ def excel_right(text: Union[Token, None], num_chars: Union[Token, None]) -> Toke
             f"Expected value for text argument, but found: {text}",
         )
 
-    if num_chars and num_chars.type != "OPERAND":
+    if num_chars is not None and num_chars.type != "OPERAND":
         return TokenError(
             TokenErrorTypes.VALUE,
             f"Expected positive integer for num_chars argument, but found: {num_chars}",
@@ -190,11 +211,17 @@ def excel_right(text: Union[Token, None], num_chars: Union[Token, None]) -> Toke
         )
 
     num_chars_value = 1
-    if num_chars:
+    if num_chars is not None:
         if num_chars.subtype == "ERROR":
             return num_chars
         elif num_chars.subtype == "NUMBER":
-            num_chars_value = num_chars.value
+            coerced_num_chars = _coerce_excel_int(num_chars.value)
+            if coerced_num_chars is None:
+                return TokenError(
+                    TokenErrorTypes.VALUE,
+                    f"Expected positive integer for num_chars argument, but found: {num_chars.value}",
+                )
+            num_chars_value = coerced_num_chars
 
             if num_chars_value < 0:
                 return TokenError(
@@ -207,12 +234,14 @@ def excel_right(text: Union[Token, None], num_chars: Union[Token, None]) -> Toke
                 f"Expected positive integer for num_chars argument, but found: {num_chars}",
             )
 
+    if num_chars_value == 0:
+        return TokenString("")
     return TokenString(text_value[-num_chars_value:])
 
 
 def excel_len(text: Union[Token, None]) -> Token:
     logging.debug(f"excel_lib.excel_len: calling with (text= {text} )")
-    if not text:
+    if text is None:
         return TokenError(
             TokenErrorTypes.VALUE,
             "Expected value for text argument, but Empty was found",

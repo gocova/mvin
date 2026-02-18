@@ -13,7 +13,7 @@ from mvin import (
 
 @register_op("&")
 def excel_op_concat(a: Token, b: Token) -> Token:
-    if a and b:
+    if a is not None and b is not None:
         if a.subtype == "ERROR":
             return a
         if b.subtype == "ERROR":
@@ -29,7 +29,7 @@ def excel_op_concat(a: Token, b: Token) -> Token:
 
 @register_op("=", "==")
 def excel_op_eq(a: Token, b: Token) -> Token:
-    if a and b:
+    if a is not None and b is not None:
         if a.subtype == "ERROR":
             return a
         if b.subtype == "ERROR":
@@ -64,7 +64,7 @@ def excel_op_neq(a: Token, b: Token) -> Token:
 )
 def wrap_excel_numeric_op(operator_func):
     def excel_numeric_op(a: Token, b: Token) -> Token:
-        if a and b:
+        if a is not None and b is not None:
             if a.subtype == "ERROR":
                 return a
             if b.subtype == "ERROR":

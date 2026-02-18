@@ -131,3 +131,19 @@ def test_too_many_args():
     with pytest.raises(SyntaxError) as exc_info:
         get_interpreter(tokens)
     assert str(exc_info.value) == "Function `SEARCH(` expects 3 arguments but got 4."
+
+
+def test_separator_outside_function_is_rejected():
+    tokens = [
+        ManualToken("(", "PAREN", "OPEN"),
+        TokenNumber(1),
+        ManualToken(",", "SEP", "ARG"),
+        TokenNumber(2),
+        ManualToken(")", "PAREN", "CLOSE"),
+    ]
+    with pytest.raises(SyntaxError) as exc_info:
+        get_interpreter(tokens)
+    assert (
+        str(exc_info.value)
+        == "Unexpected separator `Token<v:, t:SEP s:ARG >` at position 2."
+    )

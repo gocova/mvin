@@ -68,3 +68,9 @@ def test_search_start_num_error_passthrough():
     start_num = TokenError(TokenErrorTypes.VALUE, "bad start")
     result = excel_search(TokenString("a"), TokenString("abc"), start_num)
     assert result is start_num
+
+
+def test_search_start_num_rejects_non_integer_number():
+    result = excel_search(TokenString("a"), TokenString("abc"), TokenNumber(1.5))
+    assert isinstance(result, TokenError)
+    assert result.value == TokenErrorTypes.VALUE.value

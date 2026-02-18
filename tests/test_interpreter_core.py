@@ -138,6 +138,21 @@ def test_function_map_is_copied_defensively():
     assert run({}) == 2
 
 
+def test_function_can_return_falsey_token():
+    def f_falsey(value):
+        return FalseyToken(value.value - 1, "NUMBER")
+
+    custom_functions = {"DEC(": ([None], f_falsey)}
+    tokens = [
+        ManualToken("DEC(", "FUNC", "OPEN"),
+        TokenNumber(1),
+        ManualToken(")", "FUNC", "CLOSE"),
+    ]
+    run = get_interpreter(tokens, proposed_functions=custom_functions)
+    assert run is not None
+    assert run({}) == 0
+
+
 def test_none_as_token():
     tokens = [None]
     with pytest.raises(SyntaxError):
