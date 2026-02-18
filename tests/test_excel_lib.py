@@ -1,10 +1,8 @@
-import sys
-sys.path.append('src')
-
 # import pytest # required for pytest.raises
 
+from mvin import TokenError, TokenErrorTypes, TokenNumber, TokenString
 from mvin.functions.excel_lib import excel_search
-from mvin import TokenString, TokenNumber, TokenError, TokenErrorTypes
+
 
 def test_excel_search_found():
     find_text = TokenString("world")

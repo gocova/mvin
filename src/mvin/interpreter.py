@@ -5,7 +5,6 @@ from types import MappingProxyType
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Set, Tuple, Union
 
 import mvin.excel_ops as _  # noqa
-
 from mvin import (
     REGISTERED_OPS,
     Token,
@@ -342,7 +341,7 @@ def get_interpreter(
                 provided_inputs = {} if inputs is None else dict(inputs)
                 immutable_inputs: Mapping[str, Any] = MappingProxyType(provided_inputs)
 
-                stack = deque()
+                stack: deque[Any] = deque()
 
                 i = 0  # Token index for argument count retrieval
 

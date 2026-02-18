@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("src")
-
 from mvin import BaseToken, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenString
 from mvin.functions.excel_lib import excel_search
 

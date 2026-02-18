@@ -24,9 +24,13 @@ Constants:
 
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import Dict, Callable, Any, Tuple, Union
+from importlib.metadata import PackageNotFoundError, version
+from typing import Any, Callable, Dict, Tuple, Union
 
-__version__ = "0.13.0b6021601"
+try:
+    __version__ = version("mvin")
+except PackageNotFoundError:
+    __version__ = "0.0.0"
 
 
 class Token(metaclass=ABCMeta):
@@ -60,9 +64,9 @@ class BaseToken(Token):
 
     def __init__(self) -> None:
         super().__init__()
-        self._value = None
-        self._type = ""
-        self._subtype = ""
+        self._value: Any = None
+        self._type: str = ""
+        self._subtype: str = ""
 
     @property
     def type(self) -> str:
@@ -263,3 +267,22 @@ def register_numeric_op(
         return wrap_operator  # Ensure the function remains usable normally
 
     return decorator
+
+
+__all__ = [
+    "__version__",
+    "Token",
+    "BaseToken",
+    "TokenBool",
+    "TokenString",
+    "TokenNumber",
+    "TokenFunc",
+    "TokenOperator",
+    "TokenParen",
+    "TokenEmpty",
+    "TokenErrorTypes",
+    "TokenError",
+    "REGISTERED_OPS",
+    "register_op",
+    "register_numeric_op",
+]

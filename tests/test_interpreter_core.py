@@ -1,10 +1,15 @@
-import sys
-
-sys.path.append("src")
-
 import pytest  # required for pytest.raises
 
-from mvin import BaseToken, Token, TokenBool, TokenError, TokenErrorTypes, TokenNumber, TokenOperator, TokenString
+from mvin import (
+    BaseToken,
+    Token,
+    TokenBool,
+    TokenError,
+    TokenErrorTypes,
+    TokenNumber,
+    TokenOperator,
+    TokenString,
+)
 from mvin.interpreter import get_interpreter
 
 

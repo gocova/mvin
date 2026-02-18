@@ -1,10 +1,7 @@
-import sys
-
-sys.path.append("src")
-
-from mvin import BaseToken, TokenNumber, TokenString
-import mvin.excel_ops as e_ops
 from operator import add
+
+import mvin.excel_ops as e_ops
+from mvin import BaseToken, TokenNumber, TokenString
 
 
 class ManualToken(BaseToken):

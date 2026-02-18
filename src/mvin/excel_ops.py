@@ -1,4 +1,5 @@
 import operator
+
 from mvin import (
     Token,
     TokenBool,

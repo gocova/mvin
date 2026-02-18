@@ -1,8 +1,8 @@
-# SPDX-FileCopyrightText: 2025 Jose Gonzalo Covarrubias
+# SPDX-FileCopyrightText: 2026 Jose Gonzalo Covarrubias
 [project]
 name = "mvin"
 authors = [
-  {name = "Jose Gonzalo Covarrubias", email = "gocova.dev@gmail.com"},
+  {name = "Jose Gonzalo Covarrubias", email = "gocova.dev+mvin@gmail.com"},
 ]
 description = "Minimum Viable Interpreter (for single Excel formulas)"
 license = "MIT OR Apache-2.0"
@@ -11,6 +11,7 @@ readme = "README.md"
 dependencies = []
 dynamic = ["version"]
 requires-python = ">=3.9,<4.0"
+keywords = ["excel", "formula", "interpreter", "parser", "tokenizer"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",
@@ -18,47 +19,66 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  # "License :: OSI Approved :: MIT License",
-  # "License :: OSI Approved :: Apache Software License",
   "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Interpreters",
+  "Typing :: Typed",
 ]
 
 [project.urls]
-# Homepage = "https://example.com"
-# Documentation = "https://readthedocs.org"
-# Repository = "https://github.com/me/spam.git"
-# Issues = "https://github.com/me/spam/issues"
-# Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
+Homepage = "https://pypi.org/project/mvin/"
+Documentation = "https://bitbucket.org/gocova_dev/mvin/src/main/README.md"
+Repository = "https://bitbucket.org/gocova_dev/mvin"
+Issues = "https://bitbucket.org/gocova_dev/mvin/issues"
+Changelog = "https://bitbucket.org/gocova_dev/mvin/src/main/CHANGELOG.md"
 
 [build-system]
-requires = ["pdm-backend"]
+requires = ["pdm-backend>=2.4.0"]
 build-backend = "pdm.backend"
 
-[tool.pyright]
-venvPath = "."
-venv = "venv"
-
 [tool.pytest.ini_options]
-addopts = ["--import-mode=importlib"]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib --cov=mvin --cov-fail-under=90 --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.9"
+files = ["src/mvin"]
+warn_unused_configs = true
+pretty = true
 
 [dependency-groups]
 dev = [
-  "neovim>=0.3.1",
-  "pytest>=8.3.4",
-  "pytest-cov>=6.0.0",
-]
-
-[tool.pdm.dev-dependencies]
-build = [
-  "setuptools",
-  "meson-python>=0.16.0",
-  "ninja>=1.8.2"
-]
-test = [
-  "pytest",
-  "pytest-cov"
+  "hypothesis>=6.125.1",
+  "mypy>=1.15.0",
+  "pytest>=8.3.5",
+  "pytest-cov>=6.1.1",
+  "ruff>=0.12.0",
+  "twine>=6.1.0",
 ]
 
 [tool.pdm]
-version = { source = "file", path = "src/mvin/__init__.py" }
 distribution = true
+
+[tool.pdm.version]
+source = "scm"
+
+[tool.pdm.build]
+includes = ["src/mvin", "README.md", "LICENSE_APACHE", "LICENSE_MIT"]
+source-includes = [
+  "tests",
+  "API_STABILITY.md",
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "SECURITY.md",
+  "RELEASE.md",
+  "CODE_OF_CONDUCT.md",
+]

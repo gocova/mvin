@@ -1,11 +1,9 @@
-import sys
-sys.path.append('src')
-
 # import pytest # required for pytest.raises
 
-from mvin.functions.excel_lib import excel_not, excel_iserror
-from mvin import TokenString, TokenNumber, TokenError, TokenErrorTypes, BaseToken
+from mvin import BaseToken, TokenError, TokenErrorTypes, TokenNumber, TokenString
+from mvin.functions.excel_lib import excel_not
 from mvin.interpreter import get_interpreter
+
 
 class ManualToken(BaseToken):
     def __init__(self, value, type, subtype) -> None:

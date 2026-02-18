@@ -1,2 +1,2 @@
-#!zsh
-pytest --cov=mvin tests/
+#!/usr/bin/env zsh
+pdm run pytest -q

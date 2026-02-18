@@ -1,10 +1,8 @@
-import sys
-sys.path.append('src')
-
 import pytest
 
-from mvin import BaseToken, TokenError, TokenErrorTypes, TokenNumber, TokenString, TokenOperator
+from mvin import BaseToken, TokenError, TokenErrorTypes, TokenNumber, TokenOperator, TokenString
 from mvin.interpreter import get_interpreter
+
 
 class ManualToken(BaseToken):
     def __init__(self, value, type, subtype) -> None:
@@ -60,7 +58,7 @@ def test_excel_eq_ok():
     run = get_interpreter(tokens)
     assert run is not None
     result = run({})
-    assert result == False
+    assert not result
 
 def test_excel_eq_left_error():
     tokens = [TokenError(

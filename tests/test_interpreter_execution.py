@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("src")
-
 import pytest  # required for pytest.raises
 
 from mvin import BaseToken, TokenBool, TokenNumber, TokenParen, TokenString

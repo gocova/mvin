@@ -1,0 +1,131 @@
+image: python:3.12
+
+options:
+  max-time: 15
+
+definitions:
+  caches:
+    pip: ~/.cache/pip
+    pdm: ~/.cache/pdm
+  steps:
+    - step: &test_py39
+        name: "Tests (Python 3.9)"
+        image: python:3.9
+        caches:
+          - pip
+          - pdm
+        script:
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0"
+          - pdm sync -G dev
+          - pdm run pytest -q
+
+    - step: &test_py310
+        name: "Tests (Python 3.10)"
+        image: python:3.10
+        caches:
+          - pip
+          - pdm
+        script:
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0"
+          - pdm sync -G dev
+          - pdm run pytest -q
+
+    - step: &test_py311
+        name: "Tests (Python 3.11)"
+        image: python:3.11
+        caches:
+          - pip
+          - pdm
+        script:
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0"
+          - pdm sync -G dev
+          - pdm run pytest -q
+
+    - step: &test_py312
+        name: "Tests (Python 3.12)"
+        image: python:3.12
+        caches:
+          - pip
+          - pdm
+        script:
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0"
+          - pdm sync -G dev
+          - pdm run pytest -q
+
+    - step: &test_py313
+        name: "Tests (Python 3.13)"
+        image: python:3.13
+        caches:
+          - pip
+          - pdm
+        script:
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0"
+          - pdm sync -G dev
+          - pdm run pytest -q
+
+    - step: &quality
+        name: "Lint + Type Check"
+        image: python:3.12
+        caches:
+          - pip
+          - pdm
+        script:
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0"
+          - pdm sync -G dev
+          - pdm run ruff check src tests
+          - pdm run mypy
+
+    - step: &build_verify
+        name: "Build + Artifact Checks"
+        image: python:3.12
+        caches:
+          - pip
+          - pdm
+        script:
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0"
+          - pdm sync -G dev
+          - pdm build
+          - pdm run twine check dist/*
+          - python -m venv /tmp/mvin-wheel-smoke
+          - . /tmp/mvin-wheel-smoke/bin/activate
+          - python -m pip install --upgrade pip
+          - python -m pip install dist/*.whl
+          - python -c "from mvin import TokenNumber, TokenOperator; from mvin.interpreter import get_interpreter; run = get_interpreter([TokenNumber(1), TokenOperator('+'), TokenNumber(2)]); assert run is not None and run({}) == 3"
+
+    - step: &publish
+        name: "Publish to PyPI"
+        image: python:3.12
+        caches:
+          - pip
+          - pdm
+        script:
+          - test -n "$PYPI_API_TOKEN"
+          - python -m pip install --upgrade pip
+          - python -m pip install "pdm>=2.26.0" "twine>=6.1.0"
+          - pdm build
+          - python -m twine check dist/*
+          - python -m twine upload --non-interactive -u __token__ -p "$PYPI_API_TOKEN" dist/*
+
+pipelines:
+  default:
+    - parallel:
+        - step: *test_py39
+        - step: *test_py310
+        - step: *test_py311
+        - step: *test_py312
+        - step: *test_py313
+    - step: *quality
+    - step: *build_verify
+
+  tags:
+    "v*":
+      - step: *quality
+      - step: *build_verify
+      - step: *publish
