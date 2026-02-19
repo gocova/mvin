@@ -2,7 +2,7 @@
 
 [![PyPI Version](https://img.shields.io/pypi/v/mvin.svg)](https://pypi.org/project/mvin/)
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache%202.0-green.svg)](https://opensource.org/licenses/)
-[![Bitbucket](https://img.shields.io/badge/Bitbucket-Repository-0052CC?logo=bitbucket)](https://bitbucket.org/gocova_dev/mvin)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github)](https://github.com/gocova/mvin)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-orange?logo=buy-me-a-coffee&style=flat-square)](https://buymeacoffee.com/gocova)
 
 
@@ -198,14 +198,14 @@ pdm build
 
 ### CI/CD
 
-Bitbucket Pipelines config lives in `bitbucket-pipelines.yml` and runs:
+GitHub Actions workflows in `.github/workflows/ci.yml` and `.github/workflows/release.yml` run:
 
 - tests on Python 3.9-3.13
 - lint + type checks
 - build + `twine check`
 - wheel smoke test
 
-Tag pushes matching `v*` also publish to PyPI (requires `PYPI_API_TOKEN` secure variable).
+Tag pushes matching `v*` also publish to PyPI (requires `PYPI_API_TOKEN` repository secret).
 
 ## Contributing and Security
 

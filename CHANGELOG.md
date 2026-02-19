@@ -8,7 +8,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
-- Bitbucket Pipelines CI/CD with multi-version tests, lint/type checks, build checks, and PyPI
+- GitHub Actions CI/CD with multi-version tests, lint/type checks, build checks, and PyPI
   publishing on `v*` tags.
 - Unary prefix operator support (`+x`, `-x`) in the interpreter.
 - Property-based parser tests with Hypothesis.

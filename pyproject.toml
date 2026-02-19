@@ -27,10 +27,10 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://pypi.org/project/mvin/"
-Documentation = "https://bitbucket.org/gocova_dev/mvin/src/main/README.md"
-Repository = "https://bitbucket.org/gocova_dev/mvin"
-Issues = "https://bitbucket.org/gocova_dev/mvin/issues"
-Changelog = "https://bitbucket.org/gocova_dev/mvin/src/main/CHANGELOG.md"
+Documentation = "https://github.com/gocova/mvin#readme"
+Repository = "https://github.com/gocova/mvin"
+Issues = "https://github.com/gocova/mvin/issues"
+Changelog = "https://github.com/gocova/mvin/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["pdm-backend>=2.4.0"]

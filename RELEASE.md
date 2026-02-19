@@ -1,4 +1,4 @@
-# Release Checklist (PDM + Bitbucket)
+# Release Checklist (PDM + GitHub)
 
 ## 1. Pre-release
 
@@ -25,8 +25,8 @@ git push origin vX.Y.Z
 
 ## 3. CI Publish
 
-- Bitbucket pipeline `tags: v*` runs build + publish.
-- Configure repository secure variable:
+- GitHub Actions release workflow for `v*` tags runs build + publish.
+- Configure repository secret:
   - `PYPI_API_TOKEN`: PyPI token with publish scope for `mvin`.
 
 ## 4. Post-release
