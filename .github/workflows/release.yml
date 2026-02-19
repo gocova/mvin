@@ -90,33 +90,29 @@ jobs:
           python -m pip install dist/*.whl
           python -c "from mvin import TokenNumber, TokenOperator; from mvin.interpreter import get_interpreter; run = get_interpreter([TokenNumber(1), TokenOperator('+'), TokenNumber(2)]); assert run is not None and run({}) == 3"
 
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+          if-no-files-found: error
+
   publish:
     name: Publish to PyPI
     needs: [build_verify]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/project/mvin
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
         with:
-          python-version: "3.12"
-          cache: pip
+          name: python-package-distributions
+          path: dist/
 
-      - name: Validate PyPI token
-        run: test -n "${{ secrets.PYPI_API_TOKEN }}"
-
-      - name: Install PDM and Twine
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install "pdm>=2.26.0" "twine>=6.1.0"
-
-      - name: Build
-        run: pdm build
-
-      - name: Check artifacts
-        run: python -m twine check dist/*
-
-      - name: Upload to PyPI
-        run: python -m twine upload --non-interactive -u __token__ -p "${{ secrets.PYPI_API_TOKEN }}" dist/*
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

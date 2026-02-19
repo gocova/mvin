@@ -26,8 +26,11 @@ git push origin vX.Y.Z
 ## 3. CI Publish
 
 - GitHub Actions release workflow for `v*` tags runs build + publish.
-- Configure repository secret:
-  - `PYPI_API_TOKEN`: PyPI token with publish scope for `mvin`.
+- Configure PyPI Trusted Publishing for project `mvin`:
+  - Owner: `gocova`
+  - Repository: `mvin`
+  - Workflow file: `.github/workflows/release.yml`
+  - Environment: `pypi`
 
 ## 4. Post-release
 

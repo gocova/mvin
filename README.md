@@ -205,7 +205,7 @@ GitHub Actions workflows in `.github/workflows/ci.yml` and `.github/workflows/re
 - build + `twine check`
 - wheel smoke test
 
-Tag pushes matching `v*` also publish to PyPI (requires `PYPI_API_TOKEN` repository secret).
+Tag pushes matching `v*` also publish to PyPI using Trusted Publishing (GitHub OIDC).
 
 ## Contributing and Security
 
